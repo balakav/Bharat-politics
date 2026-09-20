@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BHARAT_STATES, getStateById } from "@/lib/bharatStates";
 import { recomputeGovernmentPopularity, recomputePartyPopularity } from "@/lib/popularity";
 import { ArrowLeft, TrendingUp, TrendingDown, Minus, Globe2, Landmark, RefreshCw, Crown } from "lucide-react";
@@ -17,12 +17,12 @@ export default function Popularity() {
   const [busy, setBusy] = useState(false);
 
   const loadData = useCallback(async () => {
-    const me = await base44.auth.me().catch(() => ({ role: "user" }));
+    const me = await bharat01.auth.me().catch(() => ({ role: "user" }));
     setIsAdmin(me.role === "admin");
     const isNat = selected === "NAT";
     const stateId = isNat ? "" : selected;
     const scope = isNat ? "national" : "state";
-    const all = await base44.entities.PopularityScore.list("-updated_game_time", 200);
+    const all = await bharat01.entities.PopularityScore.list("-updated_game_time", 200);
     setScores(all.filter(s => s.scope === "government" ? true : (isNat ? !s.state_id : s.state_id === stateId)));
     setLoading(false);
   }, [selected]);
@@ -40,7 +40,7 @@ export default function Popularity() {
       const stateId = isNat ? "" : selected;
       await recomputeGovernmentPopularity(scope, stateId);
       // recompute top parties from recent records
-      const records = await base44.entities.ElectionRecord.filter({ election_type: scope === "national" ? "national" : "vidhan_sabha" });
+      const records = await bharat01.entities.ElectionRecord.filter({ election_type: scope === "national" ? "national" : "vidhan_sabha" });
       const scoped = records.filter(r => isNat ? true : r.state_id === stateId);
       const parties = new Set(scoped.map(r => r.winner_party_short || r.winner_party).filter(Boolean));
       for (const p of [...parties].slice(0, 6)) await recomputePartyPopularity(p, scope, stateId);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getElectionRecords, getCompletedElections } from "@/lib/electionResults";
 import { BHARAT_STATES } from "@/lib/bharatStates";
 import { partyColor } from "@/lib/partyColors";
@@ -54,9 +54,9 @@ export default function ElectionData() {
   async function loadData() {
     const [recs, govs, projects, allWinners, completed] = await Promise.all([
       getElectionRecords(),
-      base44.entities.Government.list("-created_date", 300).catch(() => []),
-      base44.entities.DevelopmentProject.list("-created_date", 5000).catch(() => []),
-      base44.entities.Candidature.filter({ result: "won" }, undefined, 5000).catch(() => []),
+      bharat01.entities.Government.list("-created_date", 300).catch(() => []),
+      bharat01.entities.DevelopmentProject.list("-created_date", 5000).catch(() => []),
+      bharat01.entities.Candidature.filter({ result: "won" }, undefined, 5000).catch(() => []),
       getCompletedElections().catch(() => []),
     ]);
     setRecords(recs);

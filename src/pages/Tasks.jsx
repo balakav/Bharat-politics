@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { generateTasksForPlayer, resolveTask, expireOverdueTasks } from "@/lib/taskAI";
 import { usePlayerRole } from "@/hooks/usePlayerRole";
 import { formatCoins } from "@/lib/gameData";
@@ -18,15 +18,15 @@ export default function Tasks() {
 
   const loadData = useCallback(async () => {
     try {
-      const me = await base44.auth.me();
-      const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: me.id });
+      const me = await bharat01.auth.me();
+      const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id });
       const p = profiles[0];
       setProfile(p);
       if (p) {
         await expireOverdueTasks(p.player_id);
         const pos = role.primary?.role || "citizen";
         await generateTasksForPlayer(p.player_id, pos, role.primary?.state_id ? "state" : "national", role.primary?.state_id || "", 3, 3);
-        const all = await base44.entities.Task.filter({ player_id: p.player_id }, "-created_date", 50);
+        const all = await bharat01.entities.Task.filter({ player_id: p.player_id }, "-created_date", 50);
         setTasks(all);
       }
     } catch (e) {}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Link } from "react-router-dom";
 import { Briefcase, Building2, Layers, Users, MapPin, ChevronDown } from "lucide-react";
 import { getStateById, NATION } from "@/lib/bharatStates";
@@ -38,7 +38,7 @@ export default function MinistryOffice() {
   async function toggleTeam() {
     if (!office) return;
     if (showTeam) { setShowTeam(false); return; }
-    const t = await base44.entities.Minister.filter({
+    const t = await bharat01.entities.Minister.filter({
       scope: office.scope, state_id: office.scope === "national" ? "" : office.state_id || "", is_active: true,
     }).catch(() => []);
     const rank = { pm: 0, cm: 0, deputy_cm: 1, speaker: 2, whip: 3 };
@@ -47,15 +47,15 @@ export default function MinistryOffice() {
   }
 
   const load = useCallback(async () => {
-    const me = await base44.auth.me();
+    const me = await bharat01.auth.me();
     setIsAdmin(me?.role === "admin");
-    const ps = await base44.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
+    const ps = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
     if (!ps[0]) { setLoading(false); return; }
     setProfile(ps[0]);
     await expireOverdueTasks(ps[0].player_id).catch(() => {});
     const [offs, tks] = await Promise.all([
-      base44.entities.Minister.filter({ player_id: ps[0].player_id, is_active: true }).catch(() => []),
-      base44.entities.Task.filter({ player_id: ps[0].player_id, status: "pending" }).catch(() => []),
+      bharat01.entities.Minister.filter({ player_id: ps[0].player_id, is_active: true }).catch(() => []),
+      bharat01.entities.Task.filter({ player_id: ps[0].player_id, status: "pending" }).catch(() => []),
     ]);
     setOffices(offs);
     setTasks(tks);
@@ -69,8 +69,8 @@ export default function MinistryOffice() {
   async function loadOffice() {
     if (!office) return;
     const [mins, fls] = await Promise.all([
-      base44.entities.Ministry.filter({ government_id: office.government_id || "" }).catch(() => []),
-      base44.entities.MinistryFile.filter({ ministry_name: office.portfolio, scope: office.scope }, "-created_date", 100).catch(() => []),
+      bharat01.entities.Ministry.filter({ government_id: office.government_id || "" }).catch(() => []),
+      bharat01.entities.MinistryFile.filter({ ministry_name: office.portfolio, scope: office.scope }, "-created_date", 100).catch(() => []),
     ]);
     setMinistry(mins.find(m => m.name === office.portfolio) || null);
     setFiles(fls.filter(f => (f.state_id || "") === (office.state_id || "")));
@@ -82,7 +82,7 @@ export default function MinistryOffice() {
     if (busy || !office) return;
     setBusy(true); setMsg("");
     try {
-      await base44.entities.MinistryFile.create({
+      await bharat01.entities.MinistryFile.create({
         ministry_id: ministry?.id || "",
         ministry_name: office.portfolio,
         scope: office.scope,
@@ -102,7 +102,7 @@ export default function MinistryOffice() {
     if (busy) return;
     setBusy(true); setMsg("");
     try {
-      await base44.entities.MinistryFile.update(f.id, {
+      await bharat01.entities.MinistryFile.update(f.id, {
         status, decision_note: note, handled_by_name: profile.username,
       });
       setMsg(`File "${f.title}" ${status === "approved" ? "approved" : status === "rejected" ? "rejected" : "taken up for review"}.`);
@@ -118,7 +118,7 @@ export default function MinistryOffice() {
       const roleMap = { cm: "cm", pm: "pm", speaker: "speaker", deputy_cm: "cm" };
       const created = await generateTasksForPlayer(profile.player_id, roleMap[office.position] || "minister", office.scope, office.state_id || "", 3, 3);
       setMsg(created.length > 0 ? `${created.length} new office task(s) generated.` : "You already have open tasks — finish them first.");
-      const tks = await base44.entities.Task.filter({ player_id: profile.player_id, status: "pending" }).catch(() => []);
+      const tks = await bharat01.entities.Task.filter({ player_id: profile.player_id, status: "pending" }).catch(() => []);
       setTasks(tks);
     } catch (e) { setMsg("Error: " + (e.message || "could not generate tasks")); }
     setBusy(false);

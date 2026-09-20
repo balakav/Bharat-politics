@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Users, Send, CheckCircle, AlertTriangle } from "lucide-react";
 
 // Bulk test-user creation: invites N test players at once using Gmail-style
@@ -31,7 +31,7 @@ export default function TestUsers() {
     for (const email of generated) {
       if (!email) continue;
       try {
-        await base44.users.inviteUser(email, role);
+        await bharat01.users.inviteUser(email, role);
         setResults(r => [...r, { email, ok: true }]);
       } catch (e) {
         setResults(r => [...r, { email, ok: false, error: e.message || "failed" }]);

@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getCurrentGameTime } from "./gameTime";
 
 // Centralized audit logger. Never throws — audit must not break the calling flow.
@@ -22,7 +22,7 @@ export async function logAction({
     try {
       game_time = (await getCurrentGameTime()).toISOString();
     } catch (e) {}
-    await base44.entities.AuditLog.create({
+    await bharat01.entities.AuditLog.create({
       actor_id: actor_id || "system",
       actor_name: actor_name || "System",
       actor_role: actor_role || "ai",

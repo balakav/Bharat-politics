@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getStateById, BHARAT_STATES } from "@/lib/bharatStates";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { Scale, Landmark, ChevronRight, Plus, X, Play, MapPin, Gavel } from "lucide-react";
@@ -29,17 +29,17 @@ export default function Courts() {
   const [jForm, setJForm] = useState({ judgment: "", punishment: "", fine_amount: "" });
 
   const load = useCallback(async () => {
-    const me = await base44.auth.me().catch(() => null);
+    const me = await bharat01.auth.me().catch(() => null);
     setIsAdmin(me?.role === "admin");
     if (me) {
-      const ps = await base44.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
+      const ps = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
       if (ps[0]) setProfile(ps[0]);
-      setPlayers(await base44.entities.PlayerProfile.list().catch(() => []));
+      setPlayers(await bharat01.entities.PlayerProfile.list().catch(() => []));
     }
     if (court === "supreme") {
-      setCases(await base44.entities.CourtCase.filter({ scope: "national" }, "-created_date", 200).catch(() => []));
+      setCases(await bharat01.entities.CourtCase.filter({ scope: "national" }, "-created_date", 200).catch(() => []));
     } else if (selectedState) {
-      setCases(await base44.entities.CourtCase.filter({ scope: "state", state_id: selectedState }, "-created_date", 200).catch(() => []));
+      setCases(await bharat01.entities.CourtCase.filter({ scope: "state", state_id: selectedState }, "-created_date", 200).catch(() => []));
     } else {
       setCases([]);
     }
@@ -53,7 +53,7 @@ export default function Courts() {
     setBusy(true); setMsg("");
     try {
       const defendant = players.find(p => p.player_id === form.defendant_id);
-      await base44.entities.CourtCase.create({
+      await bharat01.entities.CourtCase.create({
         case_id: `${court === "supreme" ? "SC" : "HC"}-${Date.now().toString().slice(-6)}`,
         scope: court === "supreme" ? "national" : "state",
         state_id: court === "supreme" ? "" : selectedState,
@@ -78,7 +78,7 @@ export default function Courts() {
 
   async function advanceCase(c) {
     setBusy(true);
-    try { await base44.entities.CourtCase.update(c.id, { status: NEXT_STAGE[c.status] || "closed" }); load(); } finally { setBusy(false); }
+    try { await bharat01.entities.CourtCase.update(c.id, { status: NEXT_STAGE[c.status] || "closed" }); load(); } finally { setBusy(false); }
   }
 
   // Judicial ruling — the admin (as the court) delivers the judgment on a case
@@ -87,7 +87,7 @@ export default function Courts() {
     if (!jForm.judgment.trim() || busy) return;
     setBusy(true);
     try {
-      await base44.entities.CourtCase.update(c.id, {
+      await bharat01.entities.CourtCase.update(c.id, {
         status: "judgment",
         judgment: jForm.judgment.trim(),
         punishment: jForm.punishment.trim(),

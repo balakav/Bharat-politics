@@ -1,5 +1,5 @@
 
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 
 // Salary system (spec #25). Per-position salaries, admin-configurable via the
 // SalaryConfig entity. Salary grows by role multiplier but is capped at max_salary.
@@ -15,7 +15,7 @@ export const DEFAULT_SALARY = {
 
 export async function getSalaryConfigMap() {
   let list = [];
-  try { list = await base44.entities.SalaryConfig.filter({ is_active: true }); } catch (e) {}
+  try { list = await bharat01.entities.SalaryConfig.filter({ is_active: true }); } catch (e) {}
   const map = {};
   for (const s of list) map[s.position] = s;
   // fill defaults for any missing position
@@ -37,12 +37,12 @@ export async function getSalaryForPosition(position, multiplier = 1) {
 }
 
 export async function setSalaryConfig(position, patch, actor) {
-  const existing = await base44.entities.SalaryConfig.filter({ position });
+  const existing = await bharat01.entities.SalaryConfig.filter({ position });
   let rec;
   if (existing.length > 0) {
-    rec = await base44.entities.SalaryConfig.update(existing[0].id, { ...patch, position, is_active: true });
+    rec = await bharat01.entities.SalaryConfig.update(existing[0].id, { ...patch, position, is_active: true });
   } else {
-    rec = await base44.entities.SalaryConfig.create({ ...DEFAULT_SALARY[position], ...patch, position, is_active: true });
+    rec = await bharat01.entities.SalaryConfig.create({ ...DEFAULT_SALARY[position], ...patch, position, is_active: true });
   }
   return rec;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getStateById } from "@/lib/bharatStates";
 import { getCurrentGameTime, formatGameTime, gameDayNumber, getGameConfig } from "@/lib/gameTime";
 import { getAssemblyResults } from "@/lib/electionResults";
@@ -33,15 +33,15 @@ export default function Assembly() {
     const { election: el, winners: won } = await getAssemblyResults(stateId);
     setElection(el);
     setWinners(el ? [...won].sort((a, b) => (b.votes_received || 0) - (a.votes_received || 0)) : []);
-    const govs = await base44.entities.Government.filter({ state_id: stateId, type: "state" }, "-created_date", 50);
+    const govs = await bharat01.entities.Government.filter({ state_id: stateId, type: "state" }, "-created_date", 50);
     const gov = govs.find(g => g.is_active) || govs[0] || null;
     setGovernment(gov);
     let mins = [];
-    if (gov) mins = await base44.entities.Minister.filter({ government_id: gov.id, is_active: true });
+    if (gov) mins = await bharat01.entities.Minister.filter({ government_id: gov.id, is_active: true });
     setMinisters(mins);
-    const prs = await base44.entities.PresidentRule.filter({ state_id: stateId, status: "active" }, "-created_date", 10);
+    const prs = await bharat01.entities.PresidentRule.filter({ state_id: stateId, status: "active" }, "-created_date", 10);
     setPresidentRule(prs[0] || null);
-    const setups = await base44.entities.ParliamentSetup.filter({ scope: "state", state_id: stateId }, "-created_date", 5);
+    const setups = await bharat01.entities.ParliamentSetup.filter({ scope: "state", state_id: stateId }, "-created_date", 5);
     setSetup(setups[0] || null);
     const cfg = await getGameConfig();
     setGameNow(await getCurrentGameTime());

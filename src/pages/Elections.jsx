@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BHARAT_STATES, NATION } from "@/lib/bharatStates";
 import { setElectionStatus, declareResults } from "@/lib/bharatElectionService";
 import StateElectionCard from "@/components/election/StateElectionCard";
@@ -15,11 +15,11 @@ export default function Elections() {
   const [busyId, setBusyId] = useState(null);
 
   const loadData = useCallback(async () => {
-    const me = await base44.auth.me();
+    const me = await bharat01.auth.me();
     setIsAdmin(me.role === "admin");
     const [allElections, profiles] = await Promise.all([
-      base44.entities.Election.list('-created_date', 200),
-      base44.entities.PlayerProfile.filter({ created_by_id: me.id }),
+      bharat01.entities.Election.list('-created_date', 200),
+      bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }),
     ]);
     // Only Bharat elections: national OR state-scoped. Excludes legacy TN/RMC/Panchayat.
     const bharatElections = allElections.filter(e => e.election_type === "national" || e.state_id);
@@ -43,7 +43,7 @@ export default function Elections() {
   }
   async function setHome(stateId) {
     if (!profile) return;
-    await base44.entities.PlayerProfile.update(profile.id, { home_state_id: stateId });
+    await bharat01.entities.PlayerProfile.update(profile.id, { home_state_id: stateId });
     setProfile(prev => ({ ...prev, home_state_id: stateId }));
   }
 

@@ -1,5 +1,5 @@
 
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 
 // Resolves a player's current political position(s) from existing game data.
 // Returns { positions: [...], primary: { role, label, state_id? } }.
@@ -18,7 +18,7 @@ export async function resolvePlayerRole(playerProfile, userId) {
 
   // Party President
   try {
-    const parties = await base44.entities.PoliticalParty.filter({ president_id: pid });
+    const parties = await bharat01.entities.PoliticalParty.filter({ president_id: pid });
     if (parties.length > 0) {
       positions.push({ role: "party_president", scope: "party", label: `Party President · ${parties[0].short_name}` });
       setPrimaryIfHigher("party_president", `Party President · ${parties[0].short_name}`);
@@ -27,7 +27,7 @@ export async function resolvePlayerRole(playerProfile, userId) {
 
   // Minister / CM / PM / Speaker / Deputy CM
   try {
-    const ministers = await base44.entities.Minister.filter({ player_id: pid, is_active: true });
+    const ministers = await bharat01.entities.Minister.filter({ player_id: pid, is_active: true });
     for (const m of ministers) {
       const label = `${labelForPosition(m.position)} · ${m.portfolio}`;
       positions.push({ role: m.position, scope: m.scope, state_id: m.state_id, label });
@@ -37,7 +37,7 @@ export async function resolvePlayerRole(playerProfile, userId) {
 
   // Elected MLA / MP from won candidatures
   try {
-    const won = await base44.entities.Candidature.filter({ player_id: pid, result: "won" });
+    const won = await bharat01.entities.Candidature.filter({ player_id: pid, result: "won" });
     const counts = {};
     for (const c of won) {
       const r = c.election_type === "lok_sabha" || c.election_type === "national" ? "mp" : "mla";

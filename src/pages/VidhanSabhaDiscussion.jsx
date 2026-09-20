@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { useNavigate } from "react-router-dom";
 import SeatingGrid from "@/components/vidhan-sabha/SeatingGrid";
 import {
@@ -34,20 +34,20 @@ export default function VidhanSabhaDiscussion() {
   useEffect(() => { loadData(); }, []);
 
   async function loadData() {
-    const me = await base44.auth.me();
+    const me = await bharat01.auth.me();
     const [profiles, elections] = await Promise.all([
-      base44.entities.PlayerProfile.filter({ created_by_id: me.id }),
-      base44.entities.Election.filter({ election_type: "vidhan_sabha", results_declared: true }),
+      bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }),
+      bharat01.entities.Election.filter({ election_type: "vidhan_sabha", results_declared: true }),
     ]);
 
     if (profiles.length > 0) {
       const p = profiles[0];
       setProfile(p);
-      await base44.entities.PlayerProfile.update(p.id, { last_active: new Date().toISOString() });
+      await bharat01.entities.PlayerProfile.update(p.id, { last_active: new Date().toISOString() });
 
       const latestElection = elections.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
       if (latestElection) {
-        const winners = await base44.entities.Candidature.filter(
+        const winners = await bharat01.entities.Candidature.filter(
           { election_id: latestElection.id, result: "won" },
           "-votes_received",
           500
@@ -63,7 +63,7 @@ export default function VidhanSabhaDiscussion() {
     loadMessages();
     loadVotes();
     loadSessionState();
-    const unsubscribe = base44.entities.ChatMessage.subscribe((event) => {
+    const unsubscribe = bharat01.entities.ChatMessage.subscribe((event) => {
       if (event.data?.channel === CHANNEL) {
         loadMessages();
       } else if (event.data?.channel === VOTE_CHANNEL) {
@@ -76,14 +76,14 @@ export default function VidhanSabhaDiscussion() {
   }, [profile]);
 
   async function loadMessages() {
-    const msgs = await base44.entities.ChatMessage.filter({ channel: CHANNEL });
+    const msgs = await bharat01.entities.ChatMessage.filter({ channel: CHANNEL });
     msgs.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
     setMessages(msgs);
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   }
 
   async function loadVotes() {
-    const voteMsgs = await base44.entities.ChatMessage.filter({ channel: VOTE_CHANNEL });
+    const voteMsgs = await bharat01.entities.ChatMessage.filter({ channel: VOTE_CHANNEL });
     const voteMap = {};
     voteMsgs.forEach(v => {
       const parts = v.message.split("|");
@@ -93,7 +93,7 @@ export default function VidhanSabhaDiscussion() {
   }
 
   async function loadSessionState() {
-    const sessionMsgs = await base44.entities.ChatMessage.filter({ channel: SESSION_CHANNEL });
+    const sessionMsgs = await bharat01.entities.ChatMessage.filter({ channel: SESSION_CHANNEL });
     if (sessionMsgs.length === 0) return;
     const latest = sessionMsgs.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
     const parts = latest.message.split("|");
@@ -120,7 +120,7 @@ export default function VidhanSabhaDiscussion() {
     if (!input.trim() || !profile) return;
     const msg = input.trim();
     setInput("");
-    await base44.entities.ChatMessage.create({
+    await bharat01.entities.ChatMessage.create({
       channel: CHANNEL,
       sender_id: profile.player_id,
       sender_name: profile.username,
@@ -132,11 +132,11 @@ export default function VidhanSabhaDiscussion() {
 
   async function openSession() {
     setSessionState("open");
-    await base44.entities.ChatMessage.create({
+    await bharat01.entities.ChatMessage.create({
       channel: SESSION_CHANNEL, sender_id: "system", sender_name: "Speaker",
       message: "OPEN", message_type: "system",
     });
-    await base44.entities.ChatMessage.create({
+    await bharat01.entities.ChatMessage.create({
       channel: CHANNEL, sender_id: "system", sender_name: "Speaker",
       message: "Session opened. MLAs may now speak.", message_type: "system",
     });
@@ -148,11 +148,11 @@ export default function VidhanSabhaDiscussion() {
     setCurrentMotion(motion);
     setSessionState("voting");
     setVotes({});
-    await base44.entities.ChatMessage.create({
+    await bharat01.entities.ChatMessage.create({
       channel: SESSION_CHANNEL, sender_id: "system", sender_name: "Speaker",
       message: `VOTE_START|${motion}`, message_type: "system",
     });
-    await base44.entities.ChatMessage.create({
+    await bharat01.entities.ChatMessage.create({
       channel: CHANNEL, sender_id: "system", sender_name: "Speaker",
       message: `Voting started: "${motion}". MLAs, cast your vote.`, message_type: "system",
     });
@@ -161,7 +161,7 @@ export default function VidhanSabhaDiscussion() {
 
   async function castVote(vote) {
     if (!profile || sessionState !== "voting") return;
-    await base44.entities.ChatMessage.create({
+    await bharat01.entities.ChatMessage.create({
       channel: VOTE_CHANNEL, sender_id: profile.player_id, sender_name: profile.username,
       message: `${profile.player_id}|${vote}`, message_type: "system",
     });
@@ -177,11 +177,11 @@ export default function VidhanSabhaDiscussion() {
     setSessionState("open");
     setCurrentMotion("");
     setVotes({});
-    await base44.entities.ChatMessage.create({
+    await bharat01.entities.ChatMessage.create({
       channel: SESSION_CHANNEL, sender_id: "system", sender_name: "Speaker",
       message: "VOTE_END", message_type: "system",
     });
-    await base44.entities.ChatMessage.create({
+    await bharat01.entities.ChatMessage.create({
       channel: CHANNEL, sender_id: "system", sender_name: "Speaker",
       message: `Vote ${result} — YES: ${yesCount}, NO: ${noCount}, ABSTAIN: ${abstainCount}`,
       message_type: "system",
@@ -192,7 +192,7 @@ export default function VidhanSabhaDiscussion() {
     if (!aiQuestion.trim()) return;
     setAskingAi(true);
     try {
-      const response = await base44.functions.invoke("electionQna", { question: aiQuestion });
+      const response = await bharat01.functions.invoke("electionQna", { question: aiQuestion });
       setAiAnswer(response.data?.answer || "No answer available.");
     } catch (e) {
       setAiAnswer("Error fetching answer. Please try again.");

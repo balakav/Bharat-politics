@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { NATION, getStateById } from "@/lib/bharatStates";
 import { Send, Crown, Ban, CheckCircle } from "lucide-react";
 
@@ -30,14 +30,14 @@ export default function FormationAdmin({ actor }) {
 
   async function loadData() {
     const [done, govs, parties, reqs] = await Promise.all([
-      base44.entities.Election.filter({ results_declared: true }, "-created_date", 20),
-      base44.entities.Government.list("-created_date", 200),
-      base44.entities.PoliticalParty.list(),
-      base44.entities.FormationRequest.list("-created_date", 200),
+      bharat01.entities.Election.filter({ results_declared: true }, "-created_date", 20),
+      bharat01.entities.Government.list("-created_date", 200),
+      bharat01.entities.PoliticalParty.list(),
+      bharat01.entities.FormationRequest.list("-created_date", 200),
     ]);
     const rows = [];
     for (const el of done) {
-      const winners = await base44.entities.Candidature.filter({ election_id: el.id, result: "won" }, undefined, 1000);
+      const winners = await bharat01.entities.Candidature.filter({ election_id: el.id, result: "won" }, undefined, 1000);
       const gov = govs.find(g => g.election_id === el.id && g.is_active !== false);
       rows.push({
         el,
@@ -60,7 +60,7 @@ export default function FormationAdmin({ actor }) {
     try {
       const rec = row.parties.find(p => p.name === party.name || p.short_name === (party.name || "").split(" ")[0]);
       const hours = parseInt(deadlineHours, 10) || 24;
-      await base44.entities.FormationRequest.create({
+      await bharat01.entities.FormationRequest.create({
         election_id: row.el.id,
         election_title: row.el.title,
         scope: row.el.election_type === "national" ? "national" : "state",
@@ -78,7 +78,7 @@ export default function FormationAdmin({ actor }) {
         note: "Governor invites the party to prove majority (own or alliance).",
       });
       // Post the invitation in the Public Chat (floor test notice).
-      await base44.entities.ChatMessage.create({
+      await bharat01.entities.ChatMessage.create({
         channel: "global",
         sender_id: "governor",
         sender_name: "Governor",
@@ -100,7 +100,7 @@ export default function FormationAdmin({ actor }) {
     try {
       const isNational = row.el.election_type === "national";
       const headTitle = isNational ? "Prime Minister" : "Chief Minister";
-      await base44.entities.Government.create({
+      await bharat01.entities.Government.create({
         type: isNational ? "national" : "state",
         election_id: row.el.id,
         state_id: isNational ? "" : (row.el.state_id || ""),
@@ -114,7 +114,7 @@ export default function FormationAdmin({ actor }) {
         cabinet: JSON.stringify({ status: "majority", total_seats: party.seats, majority_mark: row.el.majority_mark }),
         is_active: true,
       });
-      await base44.entities.NewsItem.create({
+      await bharat01.entities.NewsItem.create({
         title: `🏛️ ${party.name} forms government in ${row.el.state_name || NATION.name}`,
         content: `${party.name} proved majority with ${party.seats} seats (majority mark ${row.el.majority_mark}). ${headTitle} sworn in.`,
         category: "politics", source: "TV99 Bharat", related_type: "government_formation", related_id: row.el.id,
@@ -129,7 +129,7 @@ export default function FormationAdmin({ actor }) {
     setBusy(row.el.id + "pr");
     setMsg("");
     try {
-      await base44.entities.PresidentRule.create({
+      await bharat01.entities.PresidentRule.create({
         state_id: row.el.state_id || "",
         state_name: row.el.state_name || "",
         started_game_time: new Date().toISOString(),
@@ -137,7 +137,7 @@ export default function FormationAdmin({ actor }) {
         status: "active",
         reason: `No government formed after ${row.el.title}.`,
       });
-      await base44.entities.NewsItem.create({
+      await bharat01.entities.NewsItem.create({
         title: `⚖️ President's Rule imposed in ${row.el.state_name}`,
         content: `No party proved majority after the ${row.el.title}. President's Rule is in effect for 3 game days.`,
         category: "politics", source: "TV99 Bharat", related_type: "president_rule", related_id: row.el.id,

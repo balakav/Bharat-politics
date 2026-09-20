@@ -120,7 +120,7 @@ function makeEntity(entityName) {
   };
 }
 
-function makeLocalBase44() {
+function makeLocalBharat01() {
   const entityCache = new Map();
   const entities = new Proxy({}, {
     get(_target, entityName) {
@@ -190,7 +190,7 @@ function makeLocalBase44() {
   };
 }
 
-export const isLocalBase44 = useLocalClient;
+export const isLocalBharat01 = useLocalClient;
 
 const client = createClient({
   appId,
@@ -239,7 +239,7 @@ function wrapEntity(entity) {
   });
 }
 
-export const base44 = useLocalClient ? makeLocalBase44() : new Proxy(client, {
+export const bharat01 = useLocalClient ? makeLocalBharat01() : new Proxy(client, {
   get(target, prop) {
     const value = Reflect.get(target, prop);
     if (prop === 'entities' && value && typeof value === 'object') {

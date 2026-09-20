@@ -4,7 +4,7 @@
 // Single reusable engine: create → open voting → declare results. No per-state
 // code; everything is driven by bharatStates config + the Election entity.
 // =============================================================================
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import {
   getStateById, generateAssemblyConstituencies, generateLokSabhaConstituencies,
   BHARAT_STATES, NATION,
@@ -58,9 +58,9 @@ export async function createElection(stateId, electionType) {
   const seats = isLokSabha ? state.lokSabhaSeats : state.assemblySeats;
   const majority = isLokSabha ? Math.floor(state.lokSabhaSeats / 2) + 1 : state.assemblyMajority;
   const title = `${state.name} ${isLokSabha ? "Lok Sabha" : "Assembly"} Election`;
-  const existing = await base44.entities.Election.filter({ state_id: stateId, election_type: electionType, results_declared: false });
+  const existing = await bharat01.entities.Election.filter({ state_id: stateId, election_type: electionType, results_declared: false });
   if (existing.length > 0) return existing[0];
-  return await base44.entities.Election.create({
+  return await bharat01.entities.Election.create({
     election_type: electionType,
     title,
     state_id: stateId,
@@ -74,9 +74,9 @@ export async function createElection(stateId, electionType) {
 }
 
 export async function createNationalElection() {
-  const existing = await base44.entities.Election.filter({ election_type: "national", results_declared: false });
+  const existing = await bharat01.entities.Election.filter({ election_type: "national", results_declared: false });
   if (existing.length > 0) return existing[0];
-  return await base44.entities.Election.create({
+  return await bharat01.entities.Election.create({
     election_type: "national",
     title: `${NATION.name} General Election (Lok Sabha)`,
     state_id: "",
@@ -95,10 +95,10 @@ export async function createByElection(stateId, electionType, constituency) {
   const state = getStateById(stateId);
   if (!state) throw new Error("Unknown state: " + stateId);
   if (!constituency) throw new Error("Constituency is required");
-  const existing = await base44.entities.Election.filter({ state_id: stateId, election_type: electionType, results_declared: false });
+  const existing = await bharat01.entities.Election.filter({ state_id: stateId, election_type: electionType, results_declared: false });
   const already = existing.find(e => e.cycle_key === "by_election" && e.title.includes(constituency));
   if (already) return already;
-  return await base44.entities.Election.create({
+  return await bharat01.entities.Election.create({
     election_type: electionType,
     title: `${state.name} By-Election — ${constituency}`,
     cycle_key: "by_election",
@@ -113,7 +113,7 @@ export async function createByElection(stateId, electionType, constituency) {
 }
 
 export async function setElectionStatus(electionId, status) {
-  return await base44.entities.Election.update(electionId, { status });
+  return await bharat01.entities.Election.update(electionId, { status });
 }
 
 // ---- AI candidate generation (national parties, not TN) ---------------------
@@ -153,7 +153,7 @@ function generateAIForConstituency(election, constituency, count, participatingP
 // ---- Result declaration (the reusable counting engine) ----------------------
 
 export async function declareResults(electionId) {
-  const el = await base44.entities.Election.get(electionId);
+  const el = await bharat01.entities.Election.get(electionId);
   if (el.results_declared) return { alreadyDeclared: true, election: el };
 
   // Build the constituency list for this election.
@@ -167,7 +167,7 @@ export async function declareResults(electionId) {
   }
 
   // Existing player candidatures.
-  const existingCands = await base44.entities.Candidature.filter({ election_id: el.id }, '-votes_received', 5000);
+  const existingCands = await bharat01.entities.Candidature.filter({ election_id: el.id }, '-votes_received', 5000);
   const registeredConstituencies = new Set(existingCands.map(c => c.constituency));
   // By-election: contest only the vacated constituency (the one with registered candidates).
   if (el.cycle_key === "by_election") {
@@ -196,22 +196,22 @@ export async function declareResults(electionId) {
   }
   for (let i = 0; i < aiCandidates.length; i += 400) {
     const batch = aiCandidates.slice(i, i + 400).map(({ _state_id, _state_name, ...rest }) => rest);
-    await base44.entities.Candidature.bulkCreate(batch);
+    await bharat01.entities.Candidature.bulkCreate(batch);
   }
 
-  const allCandidates = await base44.entities.Candidature.filter({ election_id: el.id }, '-votes_received', 5000);
+  const allCandidates = await bharat01.entities.Candidature.filter({ election_id: el.id }, '-votes_received', 5000);
 
   // Vote bonuses: development projects, public votes, alliance campaigns.
-  const allProjects = await base44.entities.DevelopmentProject.list('-created_date', 5000);
+  const allProjects = await bharat01.entities.DevelopmentProject.list('-created_date', 5000);
   const publicVoteCounts = {};
   try {
-    const publicVotes = await base44.entities.PublicVote.filter({ election_id: el.id });
+    const publicVotes = await bharat01.entities.PublicVote.filter({ election_id: el.id });
     for (const pv of publicVotes) publicVoteCounts[pv.candidature_id] = (publicVoteCounts[pv.candidature_id] || 0) + 1;
   } catch (e) {}
   const alliancePartyBonus = {};
   try {
-    const alliances = await base44.entities.Alliance.list();
-    const allCamps = await base44.entities.Campaign.list('-created_date', 5000);
+    const alliances = await bharat01.entities.Alliance.list();
+    const allCamps = await bharat01.entities.Campaign.list('-created_date', 5000);
     for (const ac of allCamps.filter(c => c.alliance_id)) {
       const alliance = alliances.find(a => a.id === ac.alliance_id);
       if (!alliance) continue;
@@ -226,7 +226,7 @@ export async function declareResults(electionId) {
   const elIsNational = el.election_type === "national";
   const protestPenalty = {};
   try {
-    const approved = await base44.entities.Protest.filter({ status: "approved" });
+    const approved = await bharat01.entities.Protest.filter({ status: "approved" });
     for (const pr of approved) {
       const inScope = elIsNational ? pr.scope === "national" : (pr.scope === "state" && pr.state_id === el.state_id);
       if (!inScope || !pr.target_party_name) continue;
@@ -267,18 +267,18 @@ export async function declareResults(electionId) {
   }
 
   for (let i = 0; i < allUpdates.length; i += 400) {
-    await base44.entities.Candidature.bulkUpdate(allUpdates.slice(i, i + 400));
+    await bharat01.entities.Candidature.bulkUpdate(allUpdates.slice(i, i + 400));
   }
 
-  await base44.entities.Election.update(el.id, { status: "completed", results_declared: true });
+  await bharat01.entities.Election.update(el.id, { status: "completed", results_declared: true });
 
   // Update player profiles (winners/losers) — AI candidates skipped.
   for (const winner of allWinners) {
     if (!winner.player_id || winner.player_id.startsWith('AI_')) continue;
-    const profiles = await base44.entities.PlayerProfile.filter({ player_id: winner.player_id });
+    const profiles = await bharat01.entities.PlayerProfile.filter({ player_id: winner.player_id });
     if (profiles.length > 0) {
       const p = profiles[0];
-      await base44.entities.PlayerProfile.update(p.id, {
+      await bharat01.entities.PlayerProfile.update(p.id, {
         elections_won: (p.elections_won || 0) + 1,
         position_held: getPositionForElection(el.election_type),
         salary_multiplier: (p.salary_multiplier || 1) * 2,
@@ -289,15 +289,15 @@ export async function declareResults(electionId) {
     const u = allUpdates.find(u => u.id === c.id);
     if (!u || u.result === 'won') continue;
     if (!c.player_id || c.player_id.startsWith('AI_')) continue;
-    const loserProfiles = await base44.entities.PlayerProfile.filter({ player_id: c.player_id });
+    const loserProfiles = await bharat01.entities.PlayerProfile.filter({ player_id: c.player_id });
     if (loserProfiles.length > 0) {
-      await base44.entities.PlayerProfile.update(loserProfiles[0].id, { position_held: "None" });
+      await bharat01.entities.PlayerProfile.update(loserProfiles[0].id, { position_held: "None" });
     }
   }
 
   // Save permanent ElectionRecords (state-aware, no duplicates for this cycle).
   const todayStr = new Date().toISOString().split('T')[0];
-  await base44.entities.ElectionRecord.deleteMany({ election_id: el.id });
+  await bharat01.entities.ElectionRecord.deleteMany({ election_id: el.id });
   const recordsToCreate = [];
   for (const winner of allWinners) {
     const groupCands = groups[winner.constituency] || [];
@@ -327,7 +327,7 @@ export async function declareResults(electionId) {
     });
   }
   for (let i = 0; i < recordsToCreate.length; i += 400) {
-    await base44.entities.ElectionRecord.bulkCreate(recordsToCreate.slice(i, i + 400));
+    await bharat01.entities.ElectionRecord.bulkCreate(recordsToCreate.slice(i, i + 400));
   }
 
   // Government formation news + Government record.
@@ -353,7 +353,7 @@ export async function declareResults(electionId) {
   const isNational = el.election_type === "national";
   const scopeState = !isNational && el.state_id ? getStateById(el.state_id) : null;
   const scopeName = isNational ? NATION.name : (el.state_name || scopeState?.name || "Bharat");
-  await base44.entities.NewsItem.create({
+  await bharat01.entities.NewsItem.create({
     title: `🏆 ${rulingParty} ${govStatus === "majority" ? "wins absolute majority" : govStatus === "coalition" ? "forms coalition" : "leads in hung house"} with ${rulingSeats} seats`,
     content: `${scopeName}: ${rulingParty} has ${rulingSeats} seats in the ${el.title}. Majority mark: ${majorityMark}. ${govStatus === "majority" ? "Government formation confirmed." : govStatus === "coalition" ? "Coalition government to be formed." : "Hung — no party crossed the majority mark."}`,
     category: "tv99",

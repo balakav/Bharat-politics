@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { useParams } from "react-router-dom";
 import { Vote, CheckCircle, Landmark, AlertCircle, ArrowLeft, RefreshCw, Share2, BarChart3, Ban } from "lucide-react";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
@@ -37,16 +37,16 @@ export default function PublicVote() {
 
   const loadData = useCallback(async () => {
     try {
-      const el = await base44.entities.Election.get(electionId);
+      const el = await bharat01.entities.Election.get(electionId);
       setElection(el);
-      const cands = await base44.entities.Candidature.filter({ election_id: electionId }, undefined, 1000);
+      const cands = await bharat01.entities.Candidature.filter({ election_id: electionId }, undefined, 1000);
       setCandidates(cands);
       const constiSet = [...new Set(cands.map(c => c.constituency).filter(Boolean))].sort();
       setConstituencies(constiSet);
       if (constiSet.length > 0 && !selectedConsti) setSelectedConsti(constiSet[0]);
       // live public vote counts
       try {
-        const pv = await base44.entities.PublicVote.filter({ election_id: electionId });
+        const pv = await bharat01.entities.PublicVote.filter({ election_id: electionId });
         const c = {};
         let nota = 0;
         for (const v of pv) {
@@ -72,13 +72,13 @@ export default function PublicVote() {
     try {
       const fingerprint = navigator.userAgent + Date.now().toString(36) + Math.random().toString(36);
       if (selected === "NOTA") {
-        await base44.entities.PublicVote.create({
+        await bharat01.entities.PublicVote.create({
           election_id: electionId, candidature_id: "NOTA", candidate_name: "NOTA",
           party_name: "None of the Above", party_short: "NOTA", constituency: selectedConsti, voter_fingerprint: fingerprint,
         });
       } else {
         const c = candidates.find(x => x.id === selected);
-        await base44.entities.PublicVote.create({
+        await bharat01.entities.PublicVote.create({
           election_id: electionId, candidature_id: c.id, candidate_name: c.player_name,
           party_name: c.party_name || "Independent", party_short: c.party_short || "IND",
           constituency: c.constituency, voter_fingerprint: fingerprint,

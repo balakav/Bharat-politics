@@ -7,8 +7,8 @@ import { runSimulation, runAgentSelfTests, runSample } from "../../shared/electi
 
 export default async function (req: Request): Promise<Response> {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const bharat01 = createClientFromRequest(req);
+    const user = await bharat01.auth.me();
     if (!user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }

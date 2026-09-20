@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getStateById, BHARAT_STATES, NATION } from "@/lib/bharatStates";
 import ChannelChat from "@/components/chat/ChannelChat";
 import { PieChart, Handshake, ChevronRight, Save, CheckCircle, Lock, MapPin } from "lucide-react";
@@ -26,13 +26,13 @@ export default function SeatSharing() {
   useEffect(() => { load(); }, []);
 
   async function load() {
-    const me = await base44.auth.me().catch(() => null);
+    const me = await bharat01.auth.me().catch(() => null);
     setIsAdmin(me?.role === "admin");
     if (me) {
-      const ps = await base44.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
+      const ps = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
       if (ps[0]) setProfile(ps[0]);
     }
-    const all = await base44.entities.Alliance.list().catch(() => []);
+    const all = await bharat01.entities.Alliance.list().catch(() => []);
     setAlliances(all);
     setLoading(false);
   }
@@ -48,7 +48,7 @@ export default function SeatSharing() {
 
   async function loadShare() {
     if (!alliance || (scope === "state" && !selectedState)) { setRecord(null); setAlloc({}); return; }
-    const recs = await base44.entities.SeatShare.filter({
+    const recs = await bharat01.entities.SeatShare.filter({
       alliance_id: alliance.id,
       scope,
       ...(scope === "national" ? {} : { state_id: selectedState }),
@@ -70,8 +70,8 @@ export default function SeatSharing() {
     try {
       const allocations = JSON.stringify((alliance.member_party_names || []).map(n => ({ party_name: n, seats: parseInt(alloc[n], 10) || 0 })));
       const data = { allocations, total_seats: totalSeats, ...(finalize ? { status: "finalized", finalized_by_name: profile?.username || "Chairman" } : {}) };
-      if (record) await base44.entities.SeatShare.update(record.id, data);
-      else await base44.entities.SeatShare.create({
+      if (record) await bharat01.entities.SeatShare.update(record.id, data);
+      else await bharat01.entities.SeatShare.create({
         alliance_id: alliance.id,
         alliance_name: alliance.name,
         scope,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Heart, MessageCircle, Repeat2, Send, Share2, Pencil, Trash2 } from "lucide-react";
 
 // Social feed — every player can post, reply, like and share (tweet-style).
@@ -17,27 +17,27 @@ export default function Social() {
 
   useEffect(() => {
     (async () => {
-      const me = await base44.auth.me().catch(() => null);
+      const me = await bharat01.auth.me().catch(() => null);
       if (me) {
-        const ps = await base44.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
+        const ps = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
         if (ps[0]) setProfile(ps[0]);
       }
       await loadPosts();
       setLoading(false);
     })();
-    const unsub = base44.entities.SocialPost.subscribe(() => loadPosts());
+    const unsub = bharat01.entities.SocialPost.subscribe(() => loadPosts());
     return unsub;
   }, []);
 
   async function loadPosts() {
-    const all = await base44.entities.SocialPost.list("-created_date", 200).catch(() => []);
+    const all = await bharat01.entities.SocialPost.list("-created_date", 200).catch(() => []);
     setPosts(all);
   }
 
   async function post() {
     if (!text.trim() || posting) return;
     setPosting(true);
-    await base44.entities.SocialPost.create({
+    await bharat01.entities.SocialPost.create({
       author_id: profile?.player_id || "guest",
       author_name: profile?.username || "Guest",
       author_photo: profile?.photo_url || "",
@@ -53,7 +53,7 @@ export default function Social() {
 
   async function reply() {
     if (!replyText.trim() || !replyTo) return;
-    await base44.entities.SocialPost.create({
+    await bharat01.entities.SocialPost.create({
       author_id: profile?.player_id || "guest",
       author_name: profile?.username || "Guest",
       author_photo: profile?.photo_url || "",
@@ -71,12 +71,12 @@ export default function Social() {
     const id = profile?.player_id || "guest";
     const likes = (p.likes || []).includes(id) ? (p.likes || []).filter(x => x !== id) : [...(p.likes || []), id];
     setPosts(prev => prev.map(x => x.id === p.id ? { ...x, likes } : x));
-    await base44.entities.SocialPost.update(p.id, { likes });
+    await bharat01.entities.SocialPost.update(p.id, { likes });
   }
 
   async function share(p) {
     setPosts(prev => prev.map(x => x.id === p.id ? { ...x, shares: (x.shares || 0) + 1 } : x));
-    await base44.entities.SocialPost.update(p.id, { shares: (p.shares || 0) + 1 });
+    await bharat01.entities.SocialPost.update(p.id, { shares: (p.shares || 0) + 1 });
     if (navigator.share) { try { await navigator.share({ title: `${p.author_name} on Bharat Union`, text: p.content }); } catch (e) {} }
   }
 
@@ -84,13 +84,13 @@ export default function Social() {
 
   async function saveEdit(p) {
     if (!editText.trim()) return;
-    await base44.entities.SocialPost.update(p.id, { content: editText.trim() });
+    await bharat01.entities.SocialPost.update(p.id, { content: editText.trim() });
     setEditingId(null); setEditText("");
     loadPosts();
   }
 
   async function removePost(p) {
-    await base44.entities.SocialPost.delete(p.id);
+    await bharat01.entities.SocialPost.delete(p.id);
     if (editingId === p.id) { setEditingId(null); setEditText(""); }
     loadPosts();
   }

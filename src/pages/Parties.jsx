@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Link } from "react-router-dom";
 import { Building2, Plus, Users, ChevronRight, Coins, Handshake } from "lucide-react";
 import { formatCoins } from "@/lib/gameData";
@@ -13,7 +13,7 @@ export default function Parties() {
   }, []);
 
   async function loadParties() {
-    const pts = await base44.entities.PoliticalParty.list();
+    const pts = await bharat01.entities.PoliticalParty.list();
     setParties(pts);
     setLoading(false);
   }

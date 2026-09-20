@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getStateById, NATION } from "@/lib/bharatStates";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { ScrollText, Stamp, CheckCircle, XCircle, Undo2, Lock, Crown } from "lucide-react";
@@ -28,10 +28,10 @@ export default function BillApprovals({ authority }) {
   const [msg, setMsg] = useState("");
 
   const load = useCallback(async () => {
-    const me = await base44.auth.me().catch(() => null);
+    const me = await bharat01.auth.me().catch(() => null);
     setIsAdmin(me?.role === "admin");
     setAdminName(me?.full_name || "");
-    const all = await base44.entities.Bill.list("-created_date", 500).catch(() => []);
+    const all = await bharat01.entities.Bill.list("-created_date", 500).catch(() => []);
     // Stable bill numbers: introduction order (oldest = 001) per government
     // house — national bills together, each state's bills separately.
     const asc = [...all].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
@@ -45,7 +45,7 @@ export default function BillApprovals({ authority }) {
     setBillNums(nums);
     setBills(all.filter(b =>
       isPresident ? b.status === "president_review" : (b.scope === "state" && b.status === "governor_review")));
-    const reqs = await base44.entities.CabinetApproval.list("-created_date", 100).catch(() => []);
+    const reqs = await bharat01.entities.CabinetApproval.list("-created_date", 100).catch(() => []);
     setCabinets(reqs.filter(r => isPresident ? r.scope === "national" : r.scope === "state"));
     setLoading(false);
   }, [isPresident]);
@@ -55,7 +55,7 @@ export default function BillApprovals({ authority }) {
   async function approve(b) {
     setBusy(true); setMsg("");
     try {
-      const law = await base44.entities.Law.create({
+      const law = await bharat01.entities.Law.create({
         title: b.title,
         scope: b.scope,
         state_id: b.state_id || "",
@@ -65,7 +65,7 @@ export default function BillApprovals({ authority }) {
         enacted_game_time: new Date().toISOString(),
         is_active: true,
       });
-      await base44.entities.Bill.update(b.id, {
+      await bharat01.entities.Bill.update(b.id, {
         status: "law",
         law_id: law.id,
         ...(isPresident ? { president_note: "Assented by the President" } : { governor_note: "Assented by the Governor" }),
@@ -80,7 +80,7 @@ export default function BillApprovals({ authority }) {
   async function reject(b) {
     setBusy(true); setMsg("");
     try {
-      await base44.entities.Bill.update(b.id, {
+      await bharat01.entities.Bill.update(b.id, {
         status: isPresident ? "president_rejected" : "president_review",
         ...(isPresident ? { president_note: "Rejected by the President" } : { governor_note: "Rejected by the Governor — referred to the President" }),
       });
@@ -93,7 +93,7 @@ export default function BillApprovals({ authority }) {
   async function returnBill(b) {
     setBusy(true); setMsg("");
     try {
-      await base44.entities.Bill.update(b.id, { status: "president_returned", president_note: "Returned for reconsideration" });
+      await bharat01.entities.Bill.update(b.id, { status: "president_returned", president_note: "Returned for reconsideration" });
       setMsg(`"${b.title}" returned for reconsideration.`);
       await load();
     } catch (e) { setMsg("Error: " + (e.message || "failed")); }
@@ -106,13 +106,13 @@ export default function BillApprovals({ authority }) {
     setBusy(true); setMsg("");
     try {
       const reviewer = isPresident ? "President" : "Governor";
-      await base44.entities.CabinetApproval.update(r.id, {
+      await bharat01.entities.CabinetApproval.update(r.id, {
         status,
         reviewed_by_name: `${reviewer}${adminName ? ` (${adminName})` : ""}`,
       });
       if (status === "approved") {
         const cab = parseCabinet(r.cabinet);
-        await base44.entities.NewsItem.create({
+        await bharat01.entities.NewsItem.create({
           title: `🏛️ ${r.party_name} cabinet approved and sworn in`,
           content: `The ${reviewer} approved the ${r.party_name} cabinet — ${r.head_title} ${r.head_player_name} with ${cab.length} ministers${r.scope === "state" && r.state_name ? ` in ${r.state_name}` : ""}.`,
           category: "politics",

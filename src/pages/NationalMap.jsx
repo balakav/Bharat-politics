@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import BharatMapSVG from "@/components/nation/BharatMapSVG";
 import { NATION, BHARAT_STATES, getStateById } from "@/lib/bharatStates";
 import { Globe2, Crown, MapPin, Landmark, Building2, ChevronRight } from "lucide-react";
@@ -29,8 +29,8 @@ export default function NationalMap() {
     (async () => {
       try {
         const [govs, els] = await Promise.all([
-          base44.entities.Government.list('-created_date', 200),
-          base44.entities.Election.list('-created_date', 200),
+          bharat01.entities.Government.list('-created_date', 200),
+          bharat01.entities.Election.list('-created_date', 200),
         ]);
         setGovernments(govs);
         setElections(els.filter(e => e.election_type === "national" || e.state_id));

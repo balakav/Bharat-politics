@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { KeyRound, Trash2, ShieldCheck } from "lucide-react";
 
 // Admin → Access. Grant and revoke special access for any player — the admin
@@ -33,8 +33,8 @@ export default function AccessManager() {
 
   async function load() {
     const [ps, gs] = await Promise.all([
-      base44.entities.PlayerProfile.list("-created_date", 300).catch(() => []),
-      base44.entities.SpecialAccess.list("-created_date", 300).catch(() => []),
+      bharat01.entities.PlayerProfile.list("-created_date", 300).catch(() => []),
+      bharat01.entities.SpecialAccess.list("-created_date", 300).catch(() => []),
     ]);
     setProfiles(ps);
     setGrants(gs);
@@ -49,7 +49,7 @@ export default function AccessManager() {
       if (grants.some(g => g.player_id === playerId && g.access_type === accessType)) {
         setMsg("This player already holds that access.");
       } else {
-        await base44.entities.SpecialAccess.create({
+        await bharat01.entities.SpecialAccess.create({
           player_id: playerId,
           player_name: p?.username || playerId,
           access_type: accessType,
@@ -70,7 +70,7 @@ export default function AccessManager() {
     if (busy) return;
     setBusy(true); setMsg("");
     try {
-      await base44.entities.SpecialAccess.delete(g.id);
+      await bharat01.entities.SpecialAccess.delete(g.id);
       setMsg(`Access revoked for ${g.player_name}.`);
       await load();
     } catch (e) {

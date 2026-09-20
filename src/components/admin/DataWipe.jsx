@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BHARAT_STATES, NATION } from "@/lib/bharatStates";
 import { invalidateResultsCache } from "@/lib/electionResults";
 import { Trash2, AlertTriangle, CheckCircle } from "lucide-react";
@@ -37,11 +37,11 @@ export default function DataWipe({ actor }) {
   async function clearGroup(key, isNation, sid) {
     if (key === "elections") {
       const q = isNation ? { election_type: "national" } : { state_id: sid };
-      const els = await base44.entities.Election.filter(q).catch(() => []);
+      const els = await bharat01.entities.Election.filter(q).catch(() => []);
       for (const e of els) {
-        await base44.entities.Candidature.deleteMany({ election_id: e.id }).catch(() => {});
+        await bharat01.entities.Candidature.deleteMany({ election_id: e.id }).catch(() => {});
       }
-      await base44.entities.Election.deleteMany(q).catch(() => {});
+      await bharat01.entities.Election.deleteMany(q).catch(() => {});
       return;
     }
     const STEPS = {
@@ -69,7 +69,7 @@ export default function DataWipe({ actor }) {
       presidentrule: [["PresidentRule", isNation ? { status: "active" } : { state_id: sid }]],
     };
     for (const [name, q] of STEPS[key] || []) {
-      await base44.entities[name].deleteMany(q).catch(() => {});
+      await bharat01.entities[name].deleteMany(q).catch(() => {});
     }
   }
 

@@ -1,5 +1,5 @@
 
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 
 // Default global game configuration. Overridden by the GameConfig entity (key "global").
 export const DEFAULTS = {
@@ -26,7 +26,7 @@ export async function getGameConfig() {
     return { ...DEFAULTS, ...cachedConfig };
   }
   try {
-    const list = await base44.entities.GameConfig.filter({ key: "global" });
+    const list = await bharat01.entities.GameConfig.filter({ key: "global" });
     cachedConfig = list[0] || null;
   } catch (e) {
     cachedConfig = null;

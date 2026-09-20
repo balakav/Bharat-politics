@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getStateById, BHARAT_STATES } from "@/lib/bharatStates";
 import { BILL_STATUS_LABEL, BILL_STATUS_COLOR, billNextSteps } from "@/lib/billFlow";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
@@ -27,18 +27,18 @@ export default function Bills() {
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    const me = await base44.auth.me().catch(() => null);
+    const me = await bharat01.auth.me().catch(() => null);
     setIsAdmin(me?.role === "admin");
     let pid = "";
     if (me) {
-      const ps = await base44.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
+      const ps = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
       if (ps[0]) { setProfile(ps[0]); pid = ps[0].player_id; }
-      setSpeakers(await base44.entities.Minister.filter({ position: "speaker", is_active: true }).catch(() => []));
+      setSpeakers(await bharat01.entities.Minister.filter({ position: "speaker", is_active: true }).catch(() => []));
     }
     const [all, els, wons] = await Promise.all([
-      base44.entities.Bill.list("-created_date", 500).catch(() => []),
-      base44.entities.Election.list("-created_date", 200).catch(() => []),
-      pid ? base44.entities.Candidature.filter({ player_id: pid, result: "won" }, undefined, 200).catch(() => []) : Promise.resolve([]),
+      bharat01.entities.Bill.list("-created_date", 500).catch(() => []),
+      bharat01.entities.Election.list("-created_date", 200).catch(() => []),
+      pid ? bharat01.entities.Candidature.filter({ player_id: pid, result: "won" }, undefined, 200).catch(() => []) : Promise.resolve([]),
     ]);
     setBills(all);
     setElections(els);
@@ -52,7 +52,7 @@ export default function Bills() {
     if (!form.title.trim() || busy) return;
     setBusy(true);
     try {
-      await base44.entities.Bill.create({
+      await bharat01.entities.Bill.create({
         title: form.title.trim(),
         scope: scope === "national" ? "national" : "state",
         state_id: scope === "national" ? "" : selectedState,
@@ -74,7 +74,7 @@ export default function Bills() {
 
   async function advance(b, to) {
     setBusy(true);
-    try { await base44.entities.Bill.update(b.id, { status: to }); await load(); } finally { setBusy(false); }
+    try { await bharat01.entities.Bill.update(b.id, { status: to }); await load(); } finally { setBusy(false); }
   }
 
   if (loading) {

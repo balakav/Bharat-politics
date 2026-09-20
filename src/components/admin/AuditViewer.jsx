@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Search, ScrollText } from "lucide-react";
 
 export default function AuditViewer() {
@@ -11,7 +11,7 @@ export default function AuditViewer() {
   useEffect(() => {
     (async () => {
       try {
-        const list = await base44.entities.AuditLog.list("-created_date", 100);
+        const list = await bharat01.entities.AuditLog.list("-created_date", 100);
         setLogs(list);
       } catch (e) {}
       setLoading(false);

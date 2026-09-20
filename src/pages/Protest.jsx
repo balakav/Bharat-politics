@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getStateById, BHARAT_STATES, NATION } from "@/lib/bharatStates";
 import { Megaphone, MapPin, Globe2, CheckCircle, XCircle, Flame, Lock } from "lucide-react";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
@@ -32,21 +32,21 @@ export default function Protests() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const me = await base44.auth.me().catch(() => null);
+    const me = await bharat01.auth.me().catch(() => null);
     setIsAdmin(me?.role === "admin");
     if (me) {
-      const ps = await base44.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
+      const ps = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
       if (ps[0]) {
         setProfile(ps[0]);
         if (ps[0].party_id) {
-          setParty(await base44.entities.PoliticalParty.get(ps[0].party_id).catch(() => null));
+          setParty(await bharat01.entities.PoliticalParty.get(ps[0].party_id).catch(() => null));
         }
       }
     }
     const [govs, prots, mins] = await Promise.all([
-      base44.entities.Government.list("-created_date", 300).catch(() => []),
-      base44.entities.Protest.list("-created_date", 200).catch(() => []),
-      base44.entities.Minister.filter({ is_active: true }).catch(() => []),
+      bharat01.entities.Government.list("-created_date", 300).catch(() => []),
+      bharat01.entities.Protest.list("-created_date", 200).catch(() => []),
+      bharat01.entities.Minister.filter({ is_active: true }).catch(() => []),
     ]);
     setGovernments(govs.filter(g => g.is_active !== false));
     setProtests(prots);
@@ -83,7 +83,7 @@ export default function Protests() {
     setBusy(true);
     try {
       const scopeName = scope === "national" ? NATION.name : (getStateById(stateId)?.name || "");
-      await base44.entities.Protest.create({
+      await bharat01.entities.Protest.create({
         title: title.trim(),
         description: description.trim(),
         scope: scope === "national" ? "national" : "state",
@@ -97,7 +97,7 @@ export default function Protests() {
         impact: 8,
         status: "pending",
       });
-      await base44.entities.NewsItem.create({
+      await bharat01.entities.NewsItem.create({
         title: `✊ ${party.name} organises a protest against ${activeGov.party_name}`,
         content: `${party.name} has taken to the streets in ${scopeName} against the ${activeGov.party_name} government — "${title.trim()}". The protest now goes to the ${scope === "national" ? "Union Home Minister" : `${scopeName} Home Minister`} for approval.`,
         category: "politics",
@@ -114,18 +114,18 @@ export default function Protests() {
   async function validate(p, status) {
     setBusy(true);
     try {
-      await base44.entities.Protest.update(p.id, { status, reviewed_by_name: profile?.username || "" });
+      await bharat01.entities.Protest.update(p.id, { status, reviewed_by_name: profile?.username || "" });
       if (status === "approved") {
-        const targets = await base44.entities.PoliticalParty.filter({ name: p.target_party_name }).catch(() => []);
+        const targets = await bharat01.entities.PoliticalParty.filter({ name: p.target_party_name }).catch(() => []);
         if (targets[0]) {
-          const pops = await base44.entities.PopularityScore.filter({ scope: "party", target_id: targets[0].id }).catch(() => []);
+          const pops = await bharat01.entities.PopularityScore.filter({ scope: "party", target_id: targets[0].id }).catch(() => []);
           if (pops[0]) {
-            await base44.entities.PopularityScore.update(pops[0].id, {
+            await bharat01.entities.PopularityScore.update(pops[0].id, {
               score: Math.max(0, (pops[0].score || 50) - (p.impact || 5)),
             });
           }
         }
-        await base44.entities.NewsItem.create({
+        await bharat01.entities.NewsItem.create({
           title: `🔥 Valid protest — anti-incumbency rises against ${p.target_party_name}`,
           content: `The protest "${p.title}" by ${p.organizer_party_name} in ${p.state_name || NATION.name} was approved by the Home Minister. Public anger against ${p.target_party_name} grows (+${p.impact || 5} anti-incumbency).`,
           category: "politics",

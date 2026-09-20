@@ -1,5 +1,5 @@
 
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { logAction } from "./audit";
 
 // Configurable tax system (spec #13/#21). National taxes apply to all states;
@@ -10,7 +10,7 @@ import { logAction } from "./audit";
 // National scope: only national taxes. State scope: national + that state's taxes.
 export async function getActiveTaxes(scope, stateId = "") {
   let all = [];
-  try { all = await base44.entities.TaxConfig.filter({ is_active: true }); } catch (e) { return []; }
+  try { all = await bharat01.entities.TaxConfig.filter({ is_active: true }); } catch (e) { return []; }
   return all.filter(t => {
     if (scope === "national") return t.scope === "national";
     return t.scope === "national" || (t.scope === "state" && t.state_id === stateId);
@@ -37,9 +37,9 @@ export async function createTaxConfig(data, actor) {
   if (data.rate < 0 || data.rate > 100) throw new Error("Tax rate must be between 0 and 100.");
   if (data.scope === "state" && !data.state_id) throw new Error("State taxes require a state_id.");
   // Duplicate check (same name + scope + state)
-  const existing = await base44.entities.TaxConfig.filter({ name: data.name, scope: data.scope, state_id: data.scope === "state" ? data.state_id : "" });
+  const existing = await bharat01.entities.TaxConfig.filter({ name: data.name, scope: data.scope, state_id: data.scope === "state" ? data.state_id : "" });
   if (existing.length > 0) throw new Error("A tax with this name already exists for this scope.");
-  const rec = await base44.entities.TaxConfig.create({ ...data, is_active: true });
+  const rec = await bharat01.entities.TaxConfig.create({ ...data, is_active: true });
   logAction({
     actor_id: actor?.id || "admin", actor_name: actor?.name || "Admin", actor_role: actor?.role || "admin",
     action: "tax_created", scope: data.scope, scope_id: data.state_id || "",
@@ -49,5 +49,5 @@ export async function createTaxConfig(data, actor) {
 }
 
 export async function toggleTax(taxId, active, actor) {
-  return await base44.entities.TaxConfig.update(taxId, { is_active: active });
+  return await bharat01.entities.TaxConfig.update(taxId, { is_active: active });
 }

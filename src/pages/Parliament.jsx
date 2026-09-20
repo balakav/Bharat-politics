@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Landmark, Crown, Building2, ChevronRight, ScrollText, Stamp, Gavel } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { NATION } from "@/lib/bharatStates";
 import { partyColor } from "@/lib/partyColors";
 
@@ -13,7 +13,7 @@ export default function Parliament() {
   const navigate = useNavigate();
   const [setup, setSetup] = useState(null);
   useEffect(() => {
-    base44.entities.ParliamentSetup.filter({ scope: "national" }, "-created_date", 5)
+    bharat01.entities.ParliamentSetup.filter({ scope: "national" }, "-created_date", 5)
       .then(s => setSetup(s[0] || null)).catch(() => setSetup(null));
   }, []);
   const houses = [

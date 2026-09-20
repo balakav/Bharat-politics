@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BHARAT_STATES, NATION, getStateById } from "@/lib/bharatStates";
 import { getAssemblyResults, getNationalResults } from "@/lib/electionResults";
 import { Sparkles, RefreshCw } from "lucide-react";
@@ -76,16 +76,16 @@ export default function ParliamentSetupForm({ actor }) {
       const title = isNational ? `${NATION.name} Lok Sabha` : `${state.name} Legislative Assembly`;
       // The Speaker is appointed through cabinet formation (Party HQ) —
       // resolve the live Speaker minister for this house.
-      const speakerRecs = await base44.entities.Minister.filter({
+      const speakerRecs = await bharat01.entities.Minister.filter({
         scope: isNational ? "national" : "state",
         position: "speaker",
         is_active: true,
         ...(isNational ? {} : { state_id: stateId }),
       }).catch(() => []);
       const speakerName = speakerRecs[0]?.player_name || "";
-      const existing = await base44.entities.ParliamentSetup.filter({ scope, state_id: isNational ? "" : stateId });
-      for (const e of existing) await base44.entities.ParliamentSetup.delete(e.id);
-      await base44.entities.ParliamentSetup.create({
+      const existing = await bharat01.entities.ParliamentSetup.filter({ scope, state_id: isNational ? "" : stateId });
+      for (const e of existing) await bharat01.entities.ParliamentSetup.delete(e.id);
+      await bharat01.entities.ParliamentSetup.create({
         scope,
         house: isNational ? "lok_sabha" : "assembly",
         state_id: isNational ? "" : stateId,

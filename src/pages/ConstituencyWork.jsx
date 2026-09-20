@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Link } from "react-router-dom";
 import { Hammer, Vote } from "lucide-react";
 import ConstituencyWorkCard from "@/components/constituency/ConstituencyWorkCard";
@@ -19,13 +19,13 @@ export default function ConstituencyWork() {
   useEffect(() => { load(); }, []);
 
   async function load() {
-    const me = await base44.auth.me();
-    const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: me.id });
+    const me = await bharat01.auth.me();
+    const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id });
     if (!profiles[0]) { setLoading(false); return; }
     const p = profiles[0];
     const [won, works] = await Promise.all([
-      base44.entities.Candidature.filter({ player_id: p.player_id, result: "won" }).catch(() => []),
-      base44.entities.DevelopmentProject.filter({ player_id: p.player_id }, "-created_date", 200).catch(() => []),
+      bharat01.entities.Candidature.filter({ player_id: p.player_id, result: "won" }).catch(() => []),
+      bharat01.entities.DevelopmentProject.filter({ player_id: p.player_id }, "-created_date", 200).catch(() => []),
     ]);
     // Group won seats by constituency (a constituency can be held as both MLA and MP).
     const byC = {};
@@ -50,7 +50,7 @@ export default function ConstituencyWork() {
     if (!profile || busy || (profile.e_coins || 0) < dt.cost) return;
     setBusy(true); setMsg("");
     try {
-      await base44.entities.DevelopmentProject.create({
+      await bharat01.entities.DevelopmentProject.create({
         player_id: profile.player_id,
         player_name: profile.username,
         type: dt.type,
@@ -63,7 +63,7 @@ export default function ConstituencyWork() {
       });
       const newCoins = (profile.e_coins || 0) - dt.cost;
       const newRep = Math.min(100, (profile.reputation || 50) + dt.impact);
-      await base44.entities.PlayerProfile.update(profile.id, { e_coins: newCoins, reputation: newRep });
+      await bharat01.entities.PlayerProfile.update(profile.id, { e_coins: newCoins, reputation: newRep });
       setProfile(prev => ({ ...prev, e_coins: newCoins, reputation: newRep }));
       setMsg(`${dt.name} delivered in ${seat.constituency} — +${dt.impact}% reputation.`);
       document.activeElement?.blur?.();

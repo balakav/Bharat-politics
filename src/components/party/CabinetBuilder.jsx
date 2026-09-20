@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Briefcase, Crown, Trash2, UserPlus, Users, Send, CheckCircle } from "lucide-react";
 import { STATE_MINISTRIES, NATIONAL_MINISTRIES } from "@/lib/ministries";
 
@@ -37,16 +37,16 @@ export default function CabinetBuilder({ gov }) {
   useEffect(() => { load(); }, [gov?.id]);
 
   async function load() {
-    const me = await base44.auth.me().catch(() => null);
+    const me = await bharat01.auth.me().catch(() => null);
     setIsAdmin(me?.role === "admin");
-    const ps = me ? await base44.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []) : [];
+    const ps = me ? await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []) : [];
     if (ps[0]) setProfile(ps[0]);
     if (!gov) { setLoading(false); return; }
     const [w, mins, parties, approvals] = await Promise.all([
-      base44.entities.Candidature.filter({ election_id: gov.election_id, result: "won" }, undefined, 1000).catch(() => []),
-      base44.entities.Minister.filter({ government_id: gov.id, is_active: true }).catch(() => []),
-      base44.entities.PoliticalParty.filter({ name: gov.party_name }).catch(() => []),
-      base44.entities.CabinetApproval.list("-created_date", 50).catch(() => []),
+      bharat01.entities.Candidature.filter({ election_id: gov.election_id, result: "won" }, undefined, 1000).catch(() => []),
+      bharat01.entities.Minister.filter({ government_id: gov.id, is_active: true }).catch(() => []),
+      bharat01.entities.PoliticalParty.filter({ name: gov.party_name }).catch(() => []),
+      bharat01.entities.CabinetApproval.list("-created_date", 50).catch(() => []),
     ]);
     setParty(parties[0] || null);
     // OWN party's winners of THIS election only — the right house (MLAs or
@@ -94,10 +94,10 @@ export default function CabinetBuilder({ gov }) {
 
   async function setWhipDesignation(playerId, playerName, designation) {
     if (!party) return;
-    const mems = await base44.entities.PartyMember.filter({ player_id: playerId, party_id: party.id }).catch(() => []);
-    if (mems[0]) await base44.entities.PartyMember.update(mems[0].id, { designation });
+    const mems = await bharat01.entities.PartyMember.filter({ player_id: playerId, party_id: party.id }).catch(() => []);
+    if (mems[0]) await bharat01.entities.PartyMember.update(mems[0].id, { designation });
     else if (designation !== "Member") {
-      await base44.entities.PartyMember.create({
+      await bharat01.entities.PartyMember.create({
         player_id: playerId, player_name: playerName, party_id: party.id,
         party_name: party.name, designation,
       }).catch(() => {});
@@ -116,14 +116,14 @@ export default function CabinetBuilder({ gov }) {
       // ministries at once.
       if (!isMinisterRole) {
         for (const m of ministers.filter(m => m.position === position)) {
-          await base44.entities.Minister.delete(m.id);
+          await bharat01.entities.Minister.delete(m.id);
         }
       } else if (ministers.some(m => m.player_id === w.player_id && m.portfolio === finalPortfolio)) {
         setMsg(`${w.player_name} already holds ${finalPortfolio}.`);
         setBusy(false);
         return;
       }
-      await base44.entities.Minister.create({
+      await bharat01.entities.Minister.create({
         scope: isNational ? "national" : "state",
         state_id: gov.state_id || "",
         government_id: gov.id,
@@ -139,16 +139,16 @@ export default function CabinetBuilder({ gov }) {
       if (position === "whip") await setWhipDesignation(w.player_id, w.player_name, "Whip");
       // Appointing the CM/PM updates the head of government everywhere.
       if (position === "cm" || position === "pm") {
-        await base44.entities.Government.update(gov.id, {
+        await bharat01.entities.Government.update(gov.id, {
           head_player_id: w.player_id, head_player_name: w.player_name,
         }).catch(() => {});
       }
       // Create the matching ministry (ministers only) so it appears on the
       // Ministries screen.
       if (isMinisterRole) {
-        const existing = await base44.entities.Ministry.filter({ government_id: gov.id }).catch(() => []);
+        const existing = await bharat01.entities.Ministry.filter({ government_id: gov.id }).catch(() => []);
         if (!existing.some(m => m.name === finalPortfolio)) {
-          await base44.entities.Ministry.create({
+          await bharat01.entities.Ministry.create({
             scope: isNational ? "national" : "state",
             state_id: gov.state_id || "",
             government_id: gov.id,
@@ -178,7 +178,7 @@ export default function CabinetBuilder({ gov }) {
     if (busy) return;
     setBusy(true);
     try {
-      await base44.entities.Minister.delete(m.id);
+      await bharat01.entities.Minister.delete(m.id);
       if (m.position === "whip") await setWhipDesignation(m.player_id, m.player_name, "Member");
       setMsg(`${m.player_name} removed from the cabinet.`);
       await load();
@@ -195,7 +195,7 @@ export default function CabinetBuilder({ gov }) {
     if (!canEdit || ministers.length === 0 || busy || pendingApproval) return;
     setBusy(true); setMsg("");
     try {
-      await base44.entities.CabinetApproval.create({
+      await bharat01.entities.CabinetApproval.create({
         scope: isNational ? "national" : "state",
         state_id: gov.state_id || "",
         state_name: gov.state_name || "",

@@ -9,8 +9,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 
 export default async function (req) {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const bharat01 = createClientFromRequest(req);
+    const user = await bharat01.auth.me();
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -24,7 +24,7 @@ export default async function (req) {
       return Response.json({ error: 'bill_id is required' }, { status: 400 });
     }
 
-    const bill = await base44.entities.Bill.get(billId);
+    const bill = await bharat01.entities.Bill.get(billId);
     if (!bill) {
       return Response.json({ error: 'Bill not found' }, { status: 404 });
     }
@@ -33,9 +33,9 @@ export default async function (req) {
     }
 
     // Only the Speaker of this house (or an admin) may close the vote.
-    const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: user.id }).catch(() => []);
+    const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: user.id }).catch(() => []);
     const playerId = profiles[0] ? profiles[0].player_id : '';
-    const speakers = await base44.entities.Minister.filter({ position: 'speaker', is_active: true }).catch(() => []);
+    const speakers = await bharat01.entities.Minister.filter({ position: 'speaker', is_active: true }).catch(() => []);
     const isHouseSpeaker = speakers.some(m =>
       m.player_id && m.player_id === playerId &&
       (bill.scope === 'national' ? m.scope === 'national' : m.state_id === bill.state_id));
@@ -46,7 +46,7 @@ export default async function (req) {
     // Tally the votes on this bill's channel.
     // Individual: "<playerId>|<vote>|<name>|<party>"
     // Whip line:  "PARTY|<party>|<vote>|<present member count>"
-    const voteMsgs = await base44.entities.ChatMessage.filter({ channel: 'billvote_' + billId }).catch(() => []);
+    const voteMsgs = await bharat01.entities.ChatMessage.filter({ channel: 'billvote_' + billId }).catch(() => []);
     const byTime = (a, b) => new Date(a.created_date) - new Date(b.created_date);
     const individual = {}; // playerId -> { vote, party }
     const partyLine = {}; // party -> { vote, count }
@@ -98,7 +98,7 @@ export default async function (req) {
     // (then Governor for state bills, President for national bills).
     const nextStatus = passed ? 'speaker_office' : 'assembly_rejected';
 
-    await base44.entities.Bill.update(billId, {
+    await bharat01.entities.Bill.update(billId, {
       status: nextStatus,
       assembly_votes_for: yes,
       assembly_votes_against: no,
@@ -106,7 +106,7 @@ export default async function (req) {
 
     // Announce the result on the house floor.
     const channelKey = bill.scope === 'national' ? 'national' : bill.state_id;
-    await base44.entities.ChatMessage.create({
+    await bharat01.entities.ChatMessage.create({
       channel: 'parl_chat_' + channelKey,
       sender_id: 'voting_agent',
       sender_name: 'Voting Agent',

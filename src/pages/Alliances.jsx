@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { ArrowLeft, Plus, Handshake, Trash2, X, Check, ChevronRight, Megaphone, Tv, FileText, Users } from "lucide-react";
 import { ALLIANCE_CAMPAIGN_TYPES, formatCoins } from "@/lib/gameData";
 
@@ -29,14 +29,14 @@ export default function Alliances() {
 
   async function loadData() {
     const [als, pts] = await Promise.all([
-      base44.entities.Alliance.list("-created_date"),
-      base44.entities.PoliticalParty.list(),
+      bharat01.entities.Alliance.list("-created_date"),
+      bharat01.entities.PoliticalParty.list(),
     ]);
     setAlliances(als);
     setParties(pts);
     try {
-      const me = await base44.auth.me();
-      const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: me.id });
+      const me = await bharat01.auth.me();
+      const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id });
       if (profiles.length > 0) {
         const p = profiles[0];
         setUserProfile(p);
@@ -52,7 +52,7 @@ export default function Alliances() {
 
   async function loadAllianceCampaigns(allianceId) {
     try {
-      const camps = await base44.entities.Campaign.filter({ alliance_id: allianceId });
+      const camps = await bharat01.entities.Campaign.filter({ alliance_id: allianceId });
       setAllianceCamps(camps);
     } catch (e) {
       setAllianceCamps([]);
@@ -64,7 +64,7 @@ export default function Alliances() {
     if ((userParty.party_fund || 0) < act.cost) return;
     setRunningCamp(act.type);
     try {
-      await base44.entities.Campaign.create({
+      await bharat01.entities.Campaign.create({
         player_id: userProfile.player_id,
         election_id: "",
         candidature_id: "",
@@ -74,7 +74,7 @@ export default function Alliances() {
         impact: act.impact,
         description: act.description,
       });
-      const updated = await base44.entities.PoliticalParty.update(userParty.id, {
+      const updated = await bharat01.entities.PoliticalParty.update(userParty.id, {
         party_fund: (userParty.party_fund || 0) - act.cost,
       });
       setUserParty(updated);
@@ -87,7 +87,7 @@ export default function Alliances() {
     if (!name.trim()) return;
     setCreating(true);
     const selectedPartyObjs = parties.filter(p => selectedParties.includes(p.id));
-    await base44.entities.Alliance.create({
+    await bharat01.entities.Alliance.create({
       name: name.trim(),
       short_name: shortName.trim() || name.trim().substring(0, 3).toUpperCase(),
       description: description.trim(),
@@ -106,11 +106,11 @@ export default function Alliances() {
   async function addParty(alliance, party) {
     const ids = [...new Set([...(alliance.member_party_ids || []), party.id])];
     const names = [...new Set([...(alliance.member_party_names || []), party.name])];
-    await base44.entities.Alliance.update(alliance.id, {
+    await bharat01.entities.Alliance.update(alliance.id, {
       member_party_ids: ids, member_party_names: names,
       chairman_party_id: ids[0] || "", chairman_party_name: names[0] || "",
     });
-    const updated = await base44.entities.Alliance.get(alliance.id);
+    const updated = await bharat01.entities.Alliance.get(alliance.id);
     setSelectedAlliance(updated);
     loadData();
   }
@@ -119,17 +119,17 @@ export default function Alliances() {
     const party = parties.find(p => p.id === partyId);
     const ids = (alliance.member_party_ids || []).filter(id => id !== partyId);
     const names = (alliance.member_party_names || []).filter(n => n !== party?.name);
-    await base44.entities.Alliance.update(alliance.id, {
+    await bharat01.entities.Alliance.update(alliance.id, {
       member_party_ids: ids, member_party_names: names,
       chairman_party_id: ids[0] || "", chairman_party_name: names[0] || "",
     });
-    const updated = await base44.entities.Alliance.get(alliance.id);
+    const updated = await bharat01.entities.Alliance.get(alliance.id);
     setSelectedAlliance(updated);
     loadData();
   }
 
   async function deleteAlliance(alliance) {
-    await base44.entities.Alliance.delete(alliance.id);
+    await bharat01.entities.Alliance.delete(alliance.id);
     setView("list"); setSelectedAlliance(null); loadData();
   }
 

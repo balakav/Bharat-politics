@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BHARAT_STATES, NATION, getStateById } from "@/lib/bharatStates";
 import { getTreasury } from "@/lib/treasury";
 import { getActiveTaxes, createTaxConfig, toggleTax } from "@/lib/taxSystem";
@@ -23,7 +23,7 @@ export default function Economy() {
   const [error, setError] = useState("");
 
   const loadData = useCallback(async () => {
-    const me = await base44.auth.me().catch(() => ({ role: "user" }));
+    const me = await bharat01.auth.me().catch(() => ({ role: "user" }));
     setIsAdmin(me.role === "admin");
     const isNat = selected === "NAT";
     const stateId = isNat ? "" : selected;

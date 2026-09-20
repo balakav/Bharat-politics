@@ -1,5 +1,5 @@
 
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getCurrentGameTime } from "./gameTime";
 import { logAction } from "./audit";
 
@@ -7,14 +7,14 @@ import { logAction } from "./audit";
 // filed → hearing → judgment → closed. Verdict from evidence strength + noise.
 
 export async function fileCourtCase(investigationId, actor) {
-  const inv = await base44.entities.Investigation.get(investigationId);
+  const inv = await bharat01.entities.Investigation.get(investigationId);
   if (inv.status !== "proven") throw new Error("Investigation must be proven before filing a court case.");
   // fetch all and filter client-side (filter may not support $ne)
-  const all = await base44.entities.CourtCase.filter({ investigation_id: investigationId });
+  const all = await bharat01.entities.CourtCase.filter({ investigation_id: investigationId });
   const open = all.find(c => c.status !== "closed");
   if (open) return open;
   const now = (await getCurrentGameTime()).toISOString();
-  const rec = await base44.entities.CourtCase.create({
+  const rec = await bharat01.entities.CourtCase.create({
     scope: inv.scope || "national", state_id: "",
     complainant: "Enforcement Directorate",
     defendant_id: inv.target_player_id, defendant_name: inv.target_player_name,
@@ -29,7 +29,7 @@ export async function fileCourtCase(investigationId, actor) {
     action: "court_case_filed", scope: inv.scope || "national",
     related_entity: "CourtCase", related_id: rec.id, details: `vs ${inv.target_player_name}`,
   });
-  await base44.entities.NewsItem.create({
+  await bharat01.entities.NewsItem.create({
     title: `⚖️ Court case filed against ${inv.target_player_name}`,
     content: `The ED has filed a court case alleging disproportionate assets worth ${(inv.estimated_amount || 0).toLocaleString()}.`,
     category: "legal", source: "TV99 Bharat", related_type: "court_case", related_id: rec.id,
@@ -46,7 +46,7 @@ function computeVerdict(c) {
 
 // Advance a single case one stage. Returns the updated case + verdict info.
 export async function advanceCourtCase(caseId, actor) {
-  const c = await base44.entities.CourtCase.get(caseId);
+  const c = await bharat01.entities.CourtCase.get(caseId);
   if (c.status === "closed") return { case: c, changed: false };
   const now = (await getCurrentGameTime()).toISOString();
   let patch = {};
@@ -64,24 +64,24 @@ export async function advanceCourtCase(caseId, actor) {
     };
     verdictInfo = { guilty, fine };
     // Apply punishment to defendant profile
-    const profiles = await base44.entities.PlayerProfile.filter({ player_id: c.defendant_id });
+    const profiles = await bharat01.entities.PlayerProfile.filter({ player_id: c.defendant_id });
     if (profiles[0]) {
       const p = profiles[0];
       const newRep = guilty ? Math.max(0, (p.reputation || 50) - 25) : Math.min(100, (p.reputation || 50) + 5);
       const newCoins = guilty ? Math.max(0, (p.e_coins || 0) - fine) : (p.e_coins || 0);
-      await base44.entities.PlayerProfile.update(p.id, { reputation: newRep, e_coins: newCoins });
+      await bharat01.entities.PlayerProfile.update(p.id, { reputation: newRep, e_coins: newCoins });
     }
   } else if (c.status === "judgment") {
     patch = { status: "closed" };
   }
-  const updated = await base44.entities.CourtCase.update(caseId, patch);
+  const updated = await bharat01.entities.CourtCase.update(caseId, patch);
   logAction({
     actor_id: actor?.id || "court_ai", actor_name: actor?.name || "Court AI", actor_role: actor?.role || "ai",
     action: "court_case_advanced", related_entity: "CourtCase", related_id: caseId,
     new_value: patch.status, details: patch.judgment ? `Verdict: ${patch.judgment}` : "",
   });
   if (verdictInfo) {
-    await base44.entities.NewsItem.create({
+    await bharat01.entities.NewsItem.create({
       title: `⚖️ ${c.defendant_name} ${verdictInfo.guilty ? "found GUILTY" : "ACQUITTED"}`,
       content: `The court has delivered its verdict in the case against ${c.defendant_name}. ${verdictInfo.guilty ? `Fined ${verdictInfo.fine.toLocaleString()}.` : "Charges dropped."}`,
       category: "legal", source: "TV99 Bharat", related_type: "court_verdict", related_id: caseId,
@@ -92,7 +92,7 @@ export async function advanceCourtCase(caseId, actor) {
 
 // Advance every non-closed case one stage (the court docket).
 export async function runCourtDocket(actor) {
-  const all = await base44.entities.CourtCase.list("-filed_game_time", 500);
+  const all = await bharat01.entities.CourtCase.list("-filed_game_time", 500);
   const open = all.filter(c => c.status !== "closed");
   let verdicts = 0;
   for (const c of open) {

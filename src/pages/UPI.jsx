@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { formatCoins } from "@/lib/gameData";
 import { ArrowLeft, Search, Send, ArrowDownLeft, ArrowUpRight, Smartphone, UserCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -23,16 +23,16 @@ export default function UPI() {
   }, []);
 
   async function loadData() {
-    const me = await base44.auth.me();
-    const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: me.id });
+    const me = await bharat01.auth.me();
+    const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id });
     if (profiles.length === 0) { setLoading(false); return; }
     const myProfile = profiles[0];
     setProfile(myProfile);
 
     const [allProfiles, sent, received] = await Promise.all([
-      base44.entities.PlayerProfile.list('-created_date', 100),
-      base44.entities.Transaction.filter({ sender_id: myProfile.player_id }),
-      base44.entities.Transaction.filter({ receiver_id: myProfile.player_id }),
+      bharat01.entities.PlayerProfile.list('-created_date', 100),
+      bharat01.entities.Transaction.filter({ sender_id: myProfile.player_id }),
+      bharat01.entities.Transaction.filter({ receiver_id: myProfile.player_id }),
     ]);
     setContacts(allProfiles.filter(p => p.player_id !== myProfile.player_id));
     const allTxns = [...sent, ...received].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
@@ -51,15 +51,15 @@ export default function UPI() {
     if (!receiver) { setError("Player not found. Check the ID."); return; }
 
     setSending(true);
-    await base44.entities.PlayerProfile.update(profile.id, {
+    await bharat01.entities.PlayerProfile.update(profile.id, {
       e_coins: (profile.e_coins || 0) - amt,
       net_worth: (profile.net_worth || 0) - amt,
     });
-    await base44.entities.PlayerProfile.update(receiver.id, {
+    await bharat01.entities.PlayerProfile.update(receiver.id, {
       e_coins: (receiver.e_coins || 0) + amt,
       net_worth: (receiver.net_worth || 0) + amt,
     });
-    await base44.entities.Transaction.create({
+    await bharat01.entities.Transaction.create({
       sender_id: profile.player_id,
       sender_name: profile.username,
       receiver_id: receiver.player_id,

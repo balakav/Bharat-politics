@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { NATION } from "@/lib/bharatStates";
 import { getNationalResults } from "@/lib/electionResults";
 import ParliamentChamber from "@/components/parliament/ParliamentChamber";
@@ -29,7 +29,7 @@ export default function ParliamentSession() {
   async function load() {
     setLoading(true);
     try {
-      const setups = await base44.entities.ParliamentSetup.filter({ scope: "national" }, "-created_date", 10);
+      const setups = await bharat01.entities.ParliamentSetup.filter({ scope: "national" }, "-created_date", 10);
       setSetup(setups[0] || null);
     } catch (e) { setSetup(null); }
     if (isLok) {
@@ -38,7 +38,7 @@ export default function ParliamentSession() {
         setWinners(w);
       } catch (e) { setWinners([]); }
       try {
-        setMinisters(await base44.entities.Minister.filter({ scope: "national", is_active: true }));
+        setMinisters(await bharat01.entities.Minister.filter({ scope: "national", is_active: true }));
       } catch (e) { setMinisters([]); }
     }
     setLoading(false);

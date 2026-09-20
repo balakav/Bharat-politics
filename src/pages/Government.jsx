@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BHARAT_STATES, getStateById, NATION } from "@/lib/bharatStates";
 import { getTreasury } from "@/lib/treasury";
 import { GovStatsGrid, GovSectionLinks } from "@/components/government/GovSections";
@@ -28,17 +28,17 @@ function formatTerm(ms) {
 async function expireTerms(govs, cfg) {
   for (const g of govs) {
     if (g.is_active === false || termRemainingMs(g, cfg) > 0) continue;
-    await base44.entities.Government.update(g.id, { is_active: false }).catch(() => {});
+    await bharat01.entities.Government.update(g.id, { is_active: false }).catch(() => {});
     g.is_active = false;
     // Notify the admin (Election Commission) to announce the next election.
-    await base44.entities.AuditLog.create({
+    await bharat01.entities.AuditLog.create({
       actor_id: "system", actor_name: "System", actor_role: "system",
       action: "government_term_expired",
       scope: g.type, scope_id: g.state_id || "national",
       related_entity: "Government", related_id: g.id,
       details: `The ${g.type === "national" ? NATION.name : g.state_name} government (${g.party_name}) completed its ${GOV_TERM_HOURS}-hour term and stands dissolved. Announce the next election from the Election Commission.`,
     }).catch(() => {});
-    await base44.entities.NewsItem.create({
+    await bharat01.entities.NewsItem.create({
       title: `⏳ Term over — ${g.party_name} government stands dissolved`,
       content: `The ${g.type === "national" ? NATION.name : g.state_name} government led by ${g.party_name} completed its ${GOV_TERM_HOURS}-hour term and has been dissolved. The Election Commission will announce the next election.`,
       category: "breaking", source: "TV99 Bharat",
@@ -68,18 +68,18 @@ export default function Government() {
 
   async function load() {
     setLoading(true);
-    const govs = await base44.entities.Government.list("-created_date", 200);
+    const govs = await bharat01.entities.Government.list("-created_date", 200);
     const cfg = await getGameConfig();
     setGameCfg(cfg);
     // Dissolve any government whose 125-hour term is over + notify the admin.
     await expireTerms(govs, cfg);
     setGovernments(govs);
-    const prs = await base44.entities.PresidentRule.filter({ status: "active" }).catch(() => []);
+    const prs = await bharat01.entities.PresidentRule.filter({ status: "active" }).catch(() => []);
     setPresidentRules(prs);
     setGov(() => govs.find(g => g.type === "national" && g.is_active !== false) || null);
     try { setTreasury(await getTreasury("national", "")); } catch (e) {}
     try {
-      const pop = await base44.entities.PopularityScore.filter({ scope: "government" });
+      const pop = await bharat01.entities.PopularityScore.filter({ scope: "government" });
       setPopularity(pop.find(p => !p.state_id) || null);
     } catch (e) {}
     setLoading(false);
@@ -92,7 +92,7 @@ export default function Government() {
       try {
         const [t, pops] = await Promise.all([
           getTreasury("state", selectedState),
-          base44.entities.PopularityScore.filter({ scope: "government" }),
+          bharat01.entities.PopularityScore.filter({ scope: "government" }),
         ]);
         setStateData({ treasury: t, popularity: pops.find(p => p.state_id === selectedState) || null });
       } catch (e) { setStateData(null); }

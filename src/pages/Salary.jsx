@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getSalaryForPosition, getSalaryConfigMap } from "@/lib/salary";
 import { treasuryDebit } from "@/lib/treasury";
 import { getCurrentGameTime, getGameConfig } from "@/lib/gameTime";
@@ -23,8 +23,8 @@ export default function Salary() {
   useEffect(() => {
     (async () => {
       try {
-        const me = await base44.auth.me();
-        const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: me.id });
+        const me = await bharat01.auth.me();
+        const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id });
         const p = profiles[0];
         setProfile(p);
         setLastCollected(p?.last_salary_collected ? new Date(p.last_salary_collected) : null);
@@ -72,8 +72,8 @@ export default function Salary() {
       await treasuryDebit(scope, stateId, amount, `Salary: ${pos}`, { id: profile.player_id, name: profile.username, role: pos });
       const newBalance = (profile.e_coins || 0) + amount;
       const gameNow = (await getCurrentGameTime()).toISOString();
-      await base44.entities.PlayerProfile.update(profile.id, { e_coins: newBalance, last_salary_collected: gameNow });
-      await base44.entities.Transaction.create({
+      await bharat01.entities.PlayerProfile.update(profile.id, { e_coins: newBalance, last_salary_collected: gameNow });
+      await bharat01.entities.Transaction.create({
         sender_id: `treasury_${scope}`, sender_name: `${scope} Treasury`,
         receiver_id: profile.player_id, receiver_name: profile.username,
         amount, note: `Salary for ${pos}`, transaction_type: "salary",

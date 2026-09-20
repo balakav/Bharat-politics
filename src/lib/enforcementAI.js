@@ -1,5 +1,5 @@
 
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getCurrentGameTime } from "./gameTime";
 import { logAction } from "./audit";
 
@@ -13,11 +13,11 @@ function expectedNetWorth(profile) {
 
 export async function openInvestigation(targetPlayerId, targetName, reason, scope = "national", stateId = "", actor) {
   // Skip if an open investigation already exists for this target.
-  const all = await base44.entities.Investigation.filter({ target_player_id: targetPlayerId });
+  const all = await bharat01.entities.Investigation.filter({ target_player_id: targetPlayerId });
   const open = all.find(i => i.status === "open" || i.status === "under_investigation");
   if (open) return open;
   const now = (await getCurrentGameTime()).toISOString();
-  const rec = await base44.entities.Investigation.create({
+  const rec = await bharat01.entities.Investigation.create({
     target_player_id: targetPlayerId, target_player_name: targetName,
     scope, reason, evidence: "", suspicious_assets: "", estimated_amount: 0,
     status: "open", opened_game_time: now,
@@ -27,7 +27,7 @@ export async function openInvestigation(targetPlayerId, targetName, reason, scop
     action: "investigation_opened", scope, scope_id: stateId || "",
     related_entity: "Investigation", related_id: rec.id, details: reason,
   });
-  await base44.entities.NewsItem.create({
+  await bharat01.entities.NewsItem.create({
     title: `🔍 Enforcement Directorate opens probe against ${targetName}`,
     content: `The ED has opened an investigation into ${targetName}. Reason: ${reason}.`,
     category: "legal", source: "TV99 Bharat", related_type: "investigation", related_id: rec.id,
@@ -37,7 +37,7 @@ export async function openInvestigation(targetPlayerId, targetName, reason, scop
 
 // Sweep all players; flag disproportionate assets.
 export async function runEnforcementSweep(actor) {
-  const profiles = await base44.entities.PlayerProfile.list();
+  const profiles = await bharat01.entities.PlayerProfile.list();
   const flagged = [];
   for (const p of profiles) {
     const expected = expectedNetWorth(p);
@@ -58,7 +58,7 @@ export async function runEnforcementSweep(actor) {
 // Mark an investigation as proven (after gathering evidence).
 export async function markProven(investigationId, evidence, estimatedAmount, actor) {
   const now = (await getCurrentGameTime()).toISOString();
-  const updated = await base44.entities.Investigation.update(investigationId, {
+  const updated = await bharat01.entities.Investigation.update(investigationId, {
     status: "proven", evidence, estimated_amount: estimatedAmount || 0, closed_game_time: now,
   });
   logAction({

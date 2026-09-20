@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Link } from "react-router-dom";
 import { formatCoins } from "@/lib/gameData";
 import { Trophy, Crown, Medal, Coins, Building2, Car, Vote, Users } from "lucide-react";
@@ -12,8 +12,8 @@ export default function Leaderboard() {
 
   useEffect(() => {
     Promise.all([
-      base44.entities.PlayerProfile.list('-net_worth', 50),
-      base44.entities.PoliticalParty.list('-member_count', 20),
+      bharat01.entities.PlayerProfile.list('-net_worth', 50),
+      bharat01.entities.PoliticalParty.list('-member_count', 20),
     ]).then(([p, pt]) => {
       setPlayers(p);
       setParties(pt);

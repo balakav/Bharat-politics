@@ -1,5 +1,5 @@
 
-import { base44 } from '@/api/base44Client';
+import { bharat01 } from '@/api/bharat01Client';
 
 // Game-driven news: ONLY real game events generate news (election results,
 // property deals, tickets, laws, protests). No random/ambient stories are
@@ -30,9 +30,9 @@ export async function generateElectionNews(election, winner, candidates) {
     content = `${winner.player_name} (${winner.party_name || 'Independent'}) has emerged victorious in the ${electionName} election, winning by a margin of ${margin.toLocaleString()} votes. ${winner.party_name ? `This is a major boost for ${winner.party_name} in the region.` : 'This victory marks a significant achievement for the Independent candidate.'}`;
   }
 
-  const existing = await base44.entities.NewsItem.filter({ related_election_id: election.id, category: 'election' });
+  const existing = await bharat01.entities.NewsItem.filter({ related_election_id: election.id, category: 'election' });
   if (existing.length === 0) {
-    await base44.entities.NewsItem.create({
+    await bharat01.entities.NewsItem.create({
       title, content, category: 'election', related_election_id: election.id, source: 'TV99 Bharat',
     });
   }
@@ -49,7 +49,7 @@ export async function generatePropertyNews(property, buyerName) {
     ? `In a major real estate deal, ${buyerName} has acquired the ${property.name} located in ${property.location} for a staggering ₹${(property.market_value / 10000000).toFixed(1)} Crore. The ${property.type} is one of the most valuable properties in the region, and this acquisition significantly boosts ${buyerName}'s property portfolio.`
     : `${buyerName} has purchased the ${property.name} in ${property.location}. The ${property.type} was listed at ₹${(property.market_value / 100000).toFixed(1)} Lakh.`;
 
-  await base44.entities.NewsItem.create({
+  await bharat01.entities.NewsItem.create({
     title, content, category: 'economy', related_id: property.id, related_type: 'property', source: 'TV99 Bharat',
   });
 }

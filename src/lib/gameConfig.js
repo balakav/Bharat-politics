@@ -1,5 +1,5 @@
 
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getGameConfig, DEFAULTS } from "./gameTime";
 import { logAction } from "./audit";
 
@@ -8,14 +8,14 @@ import { logAction } from "./audit";
 export async function setGameConfig(patch, actor) {
   let existing = [];
   try {
-    existing = await base44.entities.GameConfig.filter({ key: "global" });
+    existing = await bharat01.entities.GameConfig.filter({ key: "global" });
   } catch (e) {}
   const oldValue = existing[0] || null;
   let rec;
   if (existing.length > 0) {
-    rec = await base44.entities.GameConfig.update(existing[0].id, { ...patch, key: "global" });
+    rec = await bharat01.entities.GameConfig.update(existing[0].id, { ...patch, key: "global" });
   } else {
-    rec = await base44.entities.GameConfig.create({ ...DEFAULTS, ...patch, key: "global" });
+    rec = await bharat01.entities.GameConfig.create({ ...DEFAULTS, ...patch, key: "global" });
   }
   // Refresh the in-memory cache used by gameTime.js
   // (getGameConfig re-reads on next call within TTL, but we force freshness by

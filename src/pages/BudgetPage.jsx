@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BHARAT_STATES, getStateById, NATION } from "@/lib/bharatStates";
 import { createBudget, runBudgetAI, presentBudget, voteOnBudget } from "@/lib/budgetService";
 import { formatCoins } from "@/lib/gameData";
@@ -32,7 +32,7 @@ export default function BudgetPage() {
     const isNat = selected === "NAT";
     const stateId = isNat ? "" : selected;
     const scope = isNat ? "national" : "state";
-    const all = await base44.entities.Budget.list("-created_date", 50);
+    const all = await bharat01.entities.Budget.list("-created_date", 50);
     setBudgets(all.filter(b => b.scope === scope && (isNat || b.state_id === stateId)));
     setLoading(false);
   }, [selected]);
@@ -70,18 +70,18 @@ export default function BudgetPage() {
       // Derive assembly/parliament vote from latest completed election winners.
       const electionType = isNat ? "national" : "vidhan_sabha";
       const filterQuery = isNat ? { election_type: "national", results_declared: true } : { state_id: selected, election_type: "vidhan_sabha", results_declared: true };
-      const els = await base44.entities.Election.filter(filterQuery, "-created_date", 10);
+      const els = await bharat01.entities.Election.filter(filterQuery, "-created_date", 10);
       const el = els[0];
       let votesFor = 0, votesAgainst = 0;
       if (el) {
-        const winners = await base44.entities.Candidature.filter({ election_id: el.id, result: "won" }, "-votes_received", 5000);
+        const winners = await bharat01.entities.Candidature.filter({ election_id: el.id, result: "won" }, "-votes_received", 5000);
         const b = budgets.find(x => x.id === id);
         const ruling = (b?.coalition_parties?.length ? b.coalition_parties : (b?.party_name || "").split(" + ")).filter(Boolean);
         // If budget has no explicit party, use government record
         let rulingSet;
         if (ruling.length) rulingSet = new Set(ruling);
         else {
-          const govs = await base44.entities.Government.filter({ type: isNat ? "national" : "state", is_active: true });
+          const govs = await bharat01.entities.Government.filter({ type: isNat ? "national" : "state", is_active: true });
           const g = govs[0];
           rulingSet = new Set((g?.coalition_parties?.length ? g.coalition_parties : (g?.party_name || "").split(" + ")).filter(Boolean));
         }

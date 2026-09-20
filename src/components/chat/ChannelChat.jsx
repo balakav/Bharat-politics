@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Send } from "lucide-react";
 
 // Realtime group chat over a ChatMessage channel — shared by the party
@@ -13,21 +13,21 @@ export default function ChannelChat({ channel, meId, meName, heightClass = "h-64
   useEffect(() => {
     if (!channel) return;
     loadChat();
-    const unsub = base44.entities.ChatMessage.subscribe(e => {
+    const unsub = bharat01.entities.ChatMessage.subscribe(e => {
       if (e.data?.channel === channel) loadChat();
     });
     return unsub;
   }, [channel]);
 
   async function loadChat() {
-    const msgs = await base44.entities.ChatMessage.filter({ channel }).catch(() => []);
+    const msgs = await bharat01.entities.ChatMessage.filter({ channel }).catch(() => []);
     setMessages([...msgs].sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
     setTimeout(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   }
 
   async function send() {
     if (!input.trim()) return;
-    await base44.entities.ChatMessage.create({
+    await bharat01.entities.ChatMessage.create({
       channel,
       sender_id: meId || "guest",
       sender_name: meName || "Guest",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BUSINESS_LISTINGS, formatCoins } from "@/lib/gameData";
 import { Briefcase, TrendingUp, ShoppingCart, Building2 } from "lucide-react";
 
@@ -21,10 +21,10 @@ export default function Business() {
   }, []);
 
   async function loadData() {
-    const me = await base44.auth.me();
+    const me = await bharat01.auth.me();
     const [biz, profiles] = await Promise.all([
-      base44.entities.Business.list(),
-      base44.entities.PlayerProfile.filter({ created_by_id: me.id }),
+      bharat01.entities.Business.list(),
+      bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }),
     ]);
     setBusinesses(biz);
     if (profiles.length > 0) setProfile(profiles[0]);
@@ -33,7 +33,7 @@ export default function Business() {
 
   async function seedBusinesses() {
     for (const b of BUSINESS_LISTINGS) {
-      await base44.entities.Business.create({ ...b, for_sale: true });
+      await bharat01.entities.Business.create({ ...b, for_sale: true });
     }
     loadData();
   }
@@ -42,8 +42,8 @@ export default function Business() {
     if (!profile || profile.e_coins < biz.share_price) return;
     setBuying(biz.id);
     const annualReturn = Math.floor(biz.share_price * biz.return_rate);
-    await base44.entities.Business.update(biz.id, { owner_id: profile.player_id, owner_name: profile.username, for_sale: false });
-    await base44.entities.PlayerProfile.update(profile.id, {
+    await bharat01.entities.Business.update(biz.id, { owner_id: profile.player_id, owner_name: profile.username, for_sale: false });
+    await bharat01.entities.PlayerProfile.update(profile.id, {
       e_coins: profile.e_coins - biz.share_price,
       net_worth: (profile.net_worth || 0) + annualReturn,
     });

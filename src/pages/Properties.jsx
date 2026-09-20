@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { generatePropertyNews } from "@/lib/newsGenerator";
 import { formatCoins } from "@/lib/gameData";
 import { Building2, MapPin, ShoppingCart, Wallet, Car, Star, Wrench, Home as HomeIcon, Plus, Tag, X } from "lucide-react";
@@ -31,11 +31,11 @@ export default function Properties() {
   useEffect(() => { loadData(); }, []);
 
   async function loadData() {
-    const me = await base44.auth.me();
+    const me = await bharat01.auth.me();
     const [props, vehs, profiles] = await Promise.all([
-      base44.entities.Property.list(),
-      base44.entities.Vehicle.list(),
-      base44.entities.PlayerProfile.filter({ created_by_id: me.id }),
+      bharat01.entities.Property.list(),
+      bharat01.entities.Vehicle.list(),
+      bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }),
     ]);
     setProperties(props);
     setVehicles(vehs);
@@ -45,9 +45,9 @@ export default function Properties() {
 
   async function paySeller(ownerId, amount, countField) {
     if (!ownerId) return;
-    const sellers = await base44.entities.PlayerProfile.filter({ player_id: ownerId }).catch(() => []);
+    const sellers = await bharat01.entities.PlayerProfile.filter({ player_id: ownerId }).catch(() => []);
     if (sellers[0]) {
-      await base44.entities.PlayerProfile.update(sellers[0].id, {
+      await bharat01.entities.PlayerProfile.update(sellers[0].id, {
         e_coins: (sellers[0].e_coins || 0) + amount,
         [countField]: Math.max(0, (sellers[0][countField] || 0) - 1),
       }).catch(() => {});
@@ -58,8 +58,8 @@ export default function Properties() {
     if (!profile || (profile.e_coins || 0) < prop.market_value || prop.owner_id === profile.player_id) return;
     setBuying(prop.id);
     await paySeller(prop.owner_id, prop.market_value, "properties_owned");
-    await base44.entities.Property.update(prop.id, { owner_id: profile.player_id, owner_name: profile.username, for_sale: false });
-    await base44.entities.PlayerProfile.update(profile.id, {
+    await bharat01.entities.Property.update(prop.id, { owner_id: profile.player_id, owner_name: profile.username, for_sale: false });
+    await bharat01.entities.PlayerProfile.update(profile.id, {
       e_coins: profile.e_coins - prop.market_value,
       properties_owned: (profile.properties_owned || 0) + 1,
       net_worth: (profile.net_worth || 0) + (prop.rental_income || 0) * 12,
@@ -74,8 +74,8 @@ export default function Properties() {
     if (!profile || (profile.e_coins || 0) < veh.price || veh.owner_id === profile.player_id) return;
     setBuying(veh.id);
     await paySeller(veh.owner_id, veh.price, "vehicles_owned");
-    await base44.entities.Vehicle.update(veh.id, { owner_id: profile.player_id, owner_name: profile.username, for_sale: false });
-    await base44.entities.PlayerProfile.update(profile.id, {
+    await bharat01.entities.Vehicle.update(veh.id, { owner_id: profile.player_id, owner_name: profile.username, for_sale: false });
+    await bharat01.entities.PlayerProfile.update(profile.id, {
       e_coins: profile.e_coins - veh.price,
       vehicles_owned: (profile.vehicles_owned || 0) + 1,
     });
@@ -86,7 +86,7 @@ export default function Properties() {
 
   // Owners list / de-list their own assets on the market anytime.
   async function toggleSale(item) {
-    const entity = isProps ? base44.entities.Property : base44.entities.Vehicle;
+    const entity = isProps ? bharat01.entities.Property : bharat01.entities.Vehicle;
     await entity.update(item.id, { for_sale: !item.for_sale });
     loadData();
   }
@@ -99,7 +99,7 @@ export default function Properties() {
         setFormErr("Name, type and price are required."); return;
       }
       setListing(true); setFormErr("");
-      await base44.entities.Property.create({
+      await bharat01.entities.Property.create({
         name: form.name.trim(),
         type: form.type,
         location: (form.location || "").trim() || "Bharat Union",
@@ -115,7 +115,7 @@ export default function Properties() {
         setFormErr("Name, category and price are required."); return;
       }
       setListing(true); setFormErr("");
-      await base44.entities.Vehicle.create({
+      await bharat01.entities.Vehicle.create({
         name: form.name.trim(),
         category: form.category,
         brand: (form.brand || "").trim(),
@@ -144,7 +144,7 @@ export default function Properties() {
     const totalRent = myProps.reduce((sum, p) => sum + (p.rental_income || 0), 0);
     if (totalRent === 0) return;
     setCollectingRent(true);
-    await base44.entities.PlayerProfile.update(profile.id, {
+    await bharat01.entities.PlayerProfile.update(profile.id, {
       e_coins: (profile.e_coins || 0) + totalRent,
       net_worth: (profile.net_worth || 0) + totalRent,
       last_rent_collected: new Date().toISOString(),

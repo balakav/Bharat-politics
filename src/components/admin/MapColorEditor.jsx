@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BHARAT_STATES } from "@/lib/bharatStates";
 
 // Admin can recolor any state on the Nation map based on government formation.
@@ -16,7 +16,7 @@ export default function MapColorEditor({ actor }) {
   useEffect(() => { load(); }, []);
 
   async function load() {
-    const govs = await base44.entities.Government.list("-created_date", 200);
+    const govs = await bharat01.entities.Government.list("-created_date", 200);
     setGovernments(govs.filter(g => g.state_id));
   }
 
@@ -25,7 +25,7 @@ export default function MapColorEditor({ actor }) {
     if (!gov) { setMsg(`No government formed in ${stateId} yet — the color applies once the government forms.`); return; }
     setSaving(stateId);
     try {
-      await base44.entities.Government.update(gov.id, { map_color: color });
+      await bharat01.entities.Government.update(gov.id, { map_color: color });
       setGovernments(prev => prev.map(g => g.id === gov.id ? { ...g, map_color: color } : g));
       setMsg(`${stateId} map color updated.`);
     } catch (e) { setMsg("Failed to update color."); }

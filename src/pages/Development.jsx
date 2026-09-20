@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { DEVELOPMENT_TYPES, VIDHAN_SABHA_CONSTITUENCIES, formatCoins } from "@/lib/gameData";
 import { ArrowLeft, Route, GraduationCap, Heart, TreePine, Droplets, Trophy, Fish, HandHeart, CheckCircle, TrendingUp, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -20,10 +20,10 @@ export default function Development() {
   }, []);
 
   async function loadData() {
-    const me = await base44.auth.me();
+    const me = await bharat01.auth.me();
     const [profiles, projs] = await Promise.all([
-      base44.entities.PlayerProfile.filter({ created_by_id: me.id }),
-      base44.entities.DevelopmentProject.list('-created_date', 20),
+      bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }),
+      bharat01.entities.DevelopmentProject.list('-created_date', 20),
     ]);
     if (profiles.length > 0) setProfile(profiles[0]);
     setProjects(projs);
@@ -50,7 +50,7 @@ export default function Development() {
   async function buildProject(devType) {
     if (!profile || profile.e_coins < devType.cost) return;
     setBuilding(devType.type);
-    await base44.entities.DevelopmentProject.create({
+    await bharat01.entities.DevelopmentProject.create({
       player_id: profile.player_id,
       player_name: profile.username,
       type: devType.type,
@@ -61,7 +61,7 @@ export default function Development() {
       impact: devType.impact,
       status: "completed",
     });
-    await base44.entities.PlayerProfile.update(profile.id, {
+    await bharat01.entities.PlayerProfile.update(profile.id, {
       e_coins: profile.e_coins - devType.cost,
       reputation: Math.min(100, (profile.reputation || 50) + devType.impact),
     });

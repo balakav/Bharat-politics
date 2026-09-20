@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Link } from "react-router-dom";
 import { MessageSquare, Lock } from "lucide-react";
 import ChannelChat from "@/components/chat/ChannelChat";
@@ -18,16 +18,16 @@ export default function PartyChat() {
   useEffect(() => { load(); }, []);
 
   async function load() {
-    const me = await base44.auth.me().catch(() => null);
+    const me = await bharat01.auth.me().catch(() => null);
     if (me) {
-      const ps = await base44.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
+      const ps = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
       if (ps[0]) {
         const p = ps[0];
         setProfile(p);
         if (p.party_id) {
           const [partyRec, members] = await Promise.all([
-            base44.entities.PoliticalParty.get(p.party_id).catch(() => null),
-            base44.entities.PartyMember.filter({ party_id: p.party_id }).catch(() => []),
+            bharat01.entities.PoliticalParty.get(p.party_id).catch(() => null),
+            bharat01.entities.PartyMember.filter({ party_id: p.party_id }).catch(() => []),
           ]);
           setParty(partyRec);
           setMemberCount(members.length);

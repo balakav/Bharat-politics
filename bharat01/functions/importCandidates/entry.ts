@@ -8,8 +8,8 @@ import { getStateById, resolveState, assemblyConstituencyNames, lokSabhaConstitu
 
 export default async function(req) {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const bharat01 = createClientFromRequest(req);
+    const user = await bharat01.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
@@ -18,19 +18,19 @@ export default async function(req) {
       return Response.json({ error: 'file_url, election_id and party_id are required' }, { status: 400 });
     }
 
-    const election = await base44.entities.Election.get(election_id);
+    const election = await bharat01.entities.Election.get(election_id);
     if (!election) return Response.json({ error: 'Election not found' }, { status: 404 });
-    const party = await base44.entities.PoliticalParty.get(party_id);
+    const party = await bharat01.entities.PoliticalParty.get(party_id);
     if (!party) return Response.json({ error: 'Party not found' }, { status: 404 });
 
     // Only the party president may file the party's candidate list.
-    const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: user.id });
+    const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: user.id });
     const profile = profiles[0];
     if (!profile || party.president_id !== profile.player_id) {
       return Response.json({ error: 'Only the party president can upload the candidate list' }, { status: 403 });
     }
 
-    const extraction = await base44.asServiceRole.integrations.Core.ExtractDataFromUploadedFile({
+    const extraction = await bharat01.asServiceRole.integrations.Core.ExtractDataFromUploadedFile({
       file_url,
       json_schema: {
         type: 'object',
@@ -55,7 +55,7 @@ export default async function(req) {
     }
 
     // Skip constituencies where this party already has a candidate.
-    const existing = await base44.entities.Candidature.filter({ election_id: election.id, party_id: party.id });
+    const existing = await bharat01.entities.Candidature.filter({ election_id: election.id, party_id: party.id });
     const taken = new Set(existing.map(c => c.constituency));
 
     const isNational = election.election_type === 'national';
@@ -106,7 +106,7 @@ export default async function(req) {
     }
 
     for (let i = 0; i < toCreate.length; i += 400) {
-      await base44.entities.Candidature.bulkCreate(toCreate.slice(i, i + 400));
+      await bharat01.entities.Candidature.bulkCreate(toCreate.slice(i, i + 400));
     }
     return Response.json({
       created: toCreate.length,

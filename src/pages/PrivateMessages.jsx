@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Send, Ban, Trash2, Check, CheckCheck, Phone, Video,
@@ -52,15 +52,15 @@ export default function PrivateMessages() {
   }, []);
 
   async function loadData() {
-    const me = await base44.auth.me();
+    const me = await bharat01.auth.me();
     const [profiles, allProfiles] = await Promise.all([
-      base44.entities.PlayerProfile.filter({ created_by_id: me.id }),
-      base44.entities.PlayerProfile.list(),
+      bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }),
+      bharat01.entities.PlayerProfile.list(),
     ]);
     if (profiles.length > 0) {
       const p = profiles[0];
       setProfile(p);
-      await base44.entities.PlayerProfile.update(p.id, { last_active: new Date().toISOString() });
+      await bharat01.entities.PlayerProfile.update(p.id, { last_active: new Date().toISOString() });
     }
     setAllPlayers(allProfiles);
     setLoading(false);
@@ -69,7 +69,7 @@ export default function PrivateMessages() {
   useEffect(() => {
     if (!profile) return;
     loadMessages();
-    const unsubscribe = base44.entities.PrivateMessage.subscribe(() => {
+    const unsubscribe = bharat01.entities.PrivateMessage.subscribe(() => {
       loadMessages();
     });
     return unsubscribe;
@@ -85,8 +85,8 @@ export default function PrivateMessages() {
   async function loadMessages() {
     if (!profile) return;
     const [sent, received] = await Promise.all([
-      base44.entities.PrivateMessage.filter({ sender_id: profile.player_id }),
-      base44.entities.PrivateMessage.filter({ receiver_id: profile.player_id }),
+      bharat01.entities.PrivateMessage.filter({ sender_id: profile.player_id }),
+      bharat01.entities.PrivateMessage.filter({ receiver_id: profile.player_id }),
     ]);
     const all = [...sent, ...received].filter(m => !(m.hidden_for || []).includes(profile.player_id));
     all.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
@@ -94,7 +94,7 @@ export default function PrivateMessages() {
 
     const unread = received.filter(m => !m.read && !(m.hidden_for || []).includes(profile.player_id) && m.sender_id === activeChat && m.sender_id !== AI_ASSISTANT_ID);
     for (const msg of unread) {
-      await base44.entities.PrivateMessage.update(msg.id, { read: true });
+      await bharat01.entities.PrivateMessage.update(msg.id, { read: true });
     }
   }
 
@@ -117,7 +117,7 @@ export default function PrivateMessages() {
       ? { username: AI_ASSISTANT_NAME }
       : allPlayers.find(p => p.player_id === activeChat);
 
-    await base44.entities.PrivateMessage.create({
+    await bharat01.entities.PrivateMessage.create({
       sender_id: profile.player_id,
       sender_name: profile.username,
       receiver_id: activeChat,
@@ -131,17 +131,17 @@ export default function PrivateMessages() {
     if (activeChat === AI_ASSISTANT_ID) {
       setAiThinking(true);
       try {
-        const records = await base44.entities.ElectionRecord.list("-election_date", 500);
+        const records = await bharat01.entities.ElectionRecord.list("-election_date", 500);
         const context = records.map(r =>
           `${r.position_title} - ${r.constituency}${r.seat_type && r.seat_type !== "general" ? ` (${r.seat_type})` : ""}: ${r.winner_name} (${r.winner_party}), Votes: ${r.winner_votes}, Runner-up: ${r.runner_up_name || "N/A"}, Margin: ${r.vote_margin}, Date: ${r.election_date}`
         ).join("\n");
 
-        const response = await base44.integrations.Core.InvokeLLM({
+        const response = await bharat01.integrations.Core.InvokeLLM({
           prompt: `You are an AI assistant for a Tamil Nadu political simulation game. Answer the following question using ONLY the election data below. If the data doesn't contain the answer, say "No data available for this query." Be concise and conversational.\n\nElection Records:\n${context}\n\nQuestion: ${msg}`,
           response_json_schema: { type: "object", properties: { answer: { type: "string" } } },
         });
 
-        await base44.entities.PrivateMessage.create({
+        await bharat01.entities.PrivateMessage.create({
           sender_id: AI_ASSISTANT_ID,
           sender_name: AI_ASSISTANT_NAME,
           receiver_id: profile.player_id,
@@ -151,7 +151,7 @@ export default function PrivateMessages() {
           read: false,
         });
       } catch (e) {
-        await base44.entities.PrivateMessage.create({
+        await bharat01.entities.PrivateMessage.create({
           sender_id: AI_ASSISTANT_ID,
           sender_name: AI_ASSISTANT_NAME,
           receiver_id: profile.player_id,
@@ -169,8 +169,8 @@ export default function PrivateMessages() {
     if (!file || !profile) return;
     setUploadingDP(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      await base44.entities.PlayerProfile.update(profile.id, { photo_url: file_url });
+      const { file_url } = await bharat01.integrations.Core.UploadFile({ file });
+      await bharat01.entities.PlayerProfile.update(profile.id, { photo_url: file_url });
       setProfile(prev => ({ ...prev, photo_url: file_url }));
     } catch (e) {
       console.error("Failed to upload DP:", e);
@@ -181,7 +181,7 @@ export default function PrivateMessages() {
   async function blockPlayer() {
     if (!activeChat || !profile || activeChat === AI_ASSISTANT_ID) return;
     const updated = [...new Set([...(profile.blocked_players || []), activeChat])];
-    await base44.entities.PlayerProfile.update(profile.id, { blocked_players: updated });
+    await bharat01.entities.PlayerProfile.update(profile.id, { blocked_players: updated });
     setProfile(prev => ({ ...prev, blocked_players: updated }));
     setActiveChat(null);
     setView("list");
@@ -195,7 +195,7 @@ export default function PrivateMessages() {
     );
     for (const msg of toHide) {
       const hiddenFor = [...new Set([...(msg.hidden_for || []), profile.player_id])];
-      await base44.entities.PrivateMessage.update(msg.id, { hidden_for: hiddenFor });
+      await bharat01.entities.PrivateMessage.update(msg.id, { hidden_for: hiddenFor });
     }
     setActiveChat(null);
     setView("list");

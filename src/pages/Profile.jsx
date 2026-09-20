@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { useParams } from "react-router-dom";
 import { formatCoins } from "@/lib/gameData";
 import StatCard from "@/components/game/StatCard";
@@ -26,24 +26,24 @@ export default function Profile() {
   useEffect(() => { loadData(); }, [playerId]);
 
   async function loadData() {
-    const me = await base44.auth.me();
+    const me = await bharat01.auth.me();
     setUser(me);
     let profileData;
     if (playerId) {
-      const profiles = await base44.entities.PlayerProfile.filter({ player_id: playerId });
+      const profiles = await bharat01.entities.PlayerProfile.filter({ player_id: playerId });
       if (profiles.length > 0) profileData = profiles[0];
     } else {
-      const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: me.id });
+      const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id });
       if (profiles.length > 0) profileData = profiles[0];
     }
     if (profileData) {
       setProfile(profileData);
       setBio(profileData.bio || "");
       if (profileData.party_id) {
-        const members = await base44.entities.PartyMember.filter({ player_id: profileData.player_id, party_id: profileData.party_id });
+        const members = await bharat01.entities.PartyMember.filter({ player_id: profileData.player_id, party_id: profileData.party_id });
         if (members.length > 0) setMyMembership(members[0]);
       }
-      const winRecords = await base44.entities.ElectionRecord.filter({ winner_player_id: profileData.player_id });
+      const winRecords = await bharat01.entities.ElectionRecord.filter({ winner_player_id: profileData.player_id });
       const dedupedWins = {};
       for (const w of winRecords) {
         const key = `${w.election_date}_${w.constituency}_${w.position_title}`;
@@ -55,27 +55,27 @@ export default function Profile() {
   }
 
   async function saveBio() {
-    await base44.entities.PlayerProfile.update(profile.id, { bio });
+    await bharat01.entities.PlayerProfile.update(profile.id, { bio });
     setProfile(prev => ({ ...prev, bio }));
     setEditing(false);
   }
 
   async function logout() {
-    await base44.auth.logout("/login");
+    await bharat01.auth.logout("/login");
   }
 
   async function leaveParty() {
     if (!profile || !myMembership) return;
     setLeaving(true);
     const partyId = profile.party_id;
-    await base44.entities.PartyMember.delete(myMembership.id);
-    const party = await base44.entities.PoliticalParty.get(partyId);
+    await bharat01.entities.PartyMember.delete(myMembership.id);
+    const party = await bharat01.entities.PoliticalParty.get(partyId);
     const updates = { member_count: Math.max(0, (party.member_count || 0) - 1) };
     if (myMembership.designation === "President") {
-      const allMembers = await base44.entities.PartyMember.filter({ party_id: partyId });
+      const allMembers = await bharat01.entities.PartyMember.filter({ party_id: partyId });
       const remaining = allMembers.filter(m => m.player_id !== profile.player_id);
       if (remaining.length > 0) {
-        await base44.entities.PartyMember.update(remaining[0].id, { designation: "President" });
+        await bharat01.entities.PartyMember.update(remaining[0].id, { designation: "President" });
         updates.president_id = remaining[0].player_id;
         updates.president_name = remaining[0].player_name;
       } else {
@@ -86,8 +86,8 @@ export default function Profile() {
     if (myMembership.designation === "Vice President") { updates.vice_president_id = ""; updates.vice_president_name = ""; }
     if (myMembership.designation === "General Secretary") { updates.general_secretary_id = ""; updates.general_secretary_name = ""; }
     if (myMembership.designation === "Treasurer") { updates.treasurer_id = ""; updates.treasurer_name = ""; }
-    await base44.entities.PoliticalParty.update(partyId, updates);
-    await base44.entities.PlayerProfile.update(profile.id, { party_id: "", party_name: "" });
+    await bharat01.entities.PoliticalParty.update(partyId, updates);
+    await bharat01.entities.PlayerProfile.update(profile.id, { party_id: "", party_name: "" });
     setLeaving(false);
     setShowLeaveConfirm(false);
     setMyMembership(null);

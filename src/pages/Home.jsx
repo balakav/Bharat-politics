@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Link } from "react-router-dom";
 import { formatCoins, generatePlayerId } from "@/lib/gameData";
 import { SALARY_CONFIG, formatCountdown } from "@/lib/electionSchedule";
@@ -67,16 +67,16 @@ export default function Home() {
 
   async function loadData() {
     try {
-      const me = await base44.auth.me();
+      const me = await bharat01.auth.me();
       setIsAdmin(me.role === "admin");
-      const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: me.id });
+      const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id });
       if (profiles.length > 0) setProfile(profiles[0]);
       else setShowSetup(true);
 
       const [newsItems, config, elections] = await Promise.all([
-        base44.entities.NewsItem.list('-created_date', 5),
+        bharat01.entities.NewsItem.list('-created_date', 5),
         getGameConfig(),
-        base44.entities.Election.list('-created_date', 100),
+        bharat01.entities.Election.list('-created_date', 100),
       ]);
       setNews(newsItems);
       setGameDay(gameDayNumber(Date.now(), config));
@@ -89,8 +89,8 @@ export default function Home() {
       if (profiles.length > 0) {
         const p = profiles[0];
         const [tasks, invs] = await Promise.all([
-          base44.entities.Task.filter({ player_id: p.player_id, status: "pending" }),
-          base44.entities.Investigation.filter({ target_player_id: p.player_id }),
+          bharat01.entities.Task.filter({ player_id: p.player_id, status: "pending" }),
+          bharat01.entities.Investigation.filter({ target_player_id: p.player_id }),
         ]);
         setOverview(o => ({
           ...o,
@@ -98,16 +98,16 @@ export default function Home() {
           alerts: invs.filter(i => ["open", "under_investigation"].includes(i.status)).length,
         }));
         if (p.party_id) {
-          const party = await base44.entities.PoliticalParty.get(p.party_id);
+          const party = await bharat01.entities.PoliticalParty.get(p.party_id);
           setPartyInfo(party);
           const [members, pop] = await Promise.all([
-            base44.entities.PartyMember.filter({ party_id: party.id }),
-            base44.entities.PopularityScore.filter({ scope: "party", target_id: party.id }),
+            bharat01.entities.PartyMember.filter({ party_id: party.id }),
+            bharat01.entities.PopularityScore.filter({ scope: "party", target_id: party.id }),
           ]);
           setPartyMembers(members.length);
           if (pop.length > 0) setPartyPopularity(pop[0].score || 50);
           if (party.president_id === p.player_id) {
-            const pending = await base44.entities.Candidature.filter({ party_id: party.id, ticket_status: "pending" });
+            const pending = await bharat01.entities.Candidature.filter({ party_id: party.id, ticket_status: "pending" });
             setPendingTicketCount(pending.length);
           } else setPendingTicketCount(0);
         }
@@ -128,12 +128,12 @@ export default function Home() {
         return;
       }
       setCollecting(true);
-      await base44.entities.PoliticalParty.update(partyInfo.id, { party_fund: (partyInfo.party_fund || 0) - salary });
+      await bharat01.entities.PoliticalParty.update(partyInfo.id, { party_fund: (partyInfo.party_fund || 0) - salary });
       setPartyInfo(prev => ({ ...prev, party_fund: (prev.party_fund || 0) - salary }));
     } else {
       setCollecting(true);
     }
-    await base44.entities.PlayerProfile.update(profile.id, {
+    await bharat01.entities.PlayerProfile.update(profile.id, {
       e_coins: (profile.e_coins || 0) + salary,
       net_worth: (profile.net_worth || 0) + salary,
       last_salary_collected: new Date().toISOString(),
@@ -149,7 +149,7 @@ export default function Home() {
 
   async function createProfile() {
     if (!username.trim()) return;
-    const newProfile = await base44.entities.PlayerProfile.create({
+    const newProfile = await bharat01.entities.PlayerProfile.create({
       username: username.trim(),
       bio: bio.trim(),
       player_id: generatePlayerId(),

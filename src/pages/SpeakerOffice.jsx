@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getStateById, BHARAT_STATES, NATION } from "@/lib/bharatStates";
 import { BILL_STATUS_LABEL, BILL_STATUS_COLOR } from "@/lib/billFlow";
 import { Gavel, ScrollText, CheckCircle, XCircle, Stamp, ChevronRight, Crown, MessagesSquare } from "lucide-react";
@@ -25,15 +25,15 @@ export default function SpeakerOffice() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const me = await base44.auth.me().catch(() => null);
+    const me = await bharat01.auth.me().catch(() => null);
     setIsAdmin(me?.role === "admin");
     if (me) {
-      const ps = await base44.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
+      const ps = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
       if (ps[0]) setProfile(ps[0]);
     }
     const [spks, all] = await Promise.all([
-      base44.entities.Minister.filter({ position: "speaker", is_active: true }).catch(() => []),
-      base44.entities.Bill.list("-created_date", 500).catch(() => []),
+      bharat01.entities.Minister.filter({ position: "speaker", is_active: true }).catch(() => []),
+      bharat01.entities.Bill.list("-created_date", 500).catch(() => []),
     ]);
     setSpeakers(spks);
     setBills(all);
@@ -44,7 +44,7 @@ export default function SpeakerOffice() {
 
   async function act(b, to) {
     setBusy(true);
-    try { await base44.entities.Bill.update(b.id, { status: to }); await load(); } finally { setBusy(false); }
+    try { await bharat01.entities.Bill.update(b.id, { status: to }); await load(); } finally { setBusy(false); }
   }
 
   if (loading) {

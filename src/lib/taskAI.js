@@ -1,5 +1,5 @@
 
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getCurrentGameTime, getGameConfig } from "./gameTime";
 import { logAction } from "./audit";
 
@@ -122,12 +122,12 @@ function pick(arr, n) {
 
 // Generate up to `count` new tasks for a player if they have fewer than `maxActive`.
 export async function generateTasksForPlayer(playerId, role, scope = "state", stateId = "", count = 3, maxActive = 2) {
-  const active = await base44.entities.Task.filter({ player_id: playerId, status: "pending" });
+  const active = await bharat01.entities.Task.filter({ player_id: playerId, status: "pending" });
   if (active.length >= maxActive) return [];
   // Fresh tasks only: skip every template the player has already received
   // (open or resolved), so the office never repeats the same task.
   const seen = new Set(active.map(t => t.title));
-  const past = await base44.entities.Task.filter({ player_id: playerId, status: "completed" }, "-created_date", 100).catch(() => []);
+  const past = await bharat01.entities.Task.filter({ player_id: playerId, status: "completed" }, "-created_date", 100).catch(() => []);
   for (const t of past) seen.add(t.title);
   const all = TEMPLATES[role] || TEMPLATES.citizen;
   const fresh = all.filter(t => !seen.has(t.title));
@@ -145,24 +145,24 @@ export async function generateTasksForPlayer(playerId, role, scope = "state", st
     status: "pending",
   }));
   if (toCreate.length === 0) return [];
-  return await base44.entities.Task.bulkCreate(toCreate);
+  return await bharat01.entities.Task.bulkCreate(toCreate);
 }
 
 // Resolve a task by applying the chosen option's rewards/penalties to the player.
 export async function resolveTask(taskId, chosenIndex) {
-  const task = await base44.entities.Task.get(taskId);
+  const task = await bharat01.entities.Task.get(taskId);
   if (task.status !== "pending") throw new Error("Task already resolved or expired.");
   const choices = JSON.parse(task.choices || "[]");
   const choice = choices[chosenIndex];
   if (!choice) throw new Error("Invalid choice.");
-  const profiles = await base44.entities.PlayerProfile.filter({ player_id: task.player_id });
+  const profiles = await bharat01.entities.PlayerProfile.filter({ player_id: task.player_id });
   const p = profiles[0];
   if (p) {
     const newRep = Math.max(0, Math.min(100, (p.reputation || 50) + (choice.reputation || 0)));
     const newCoins = (p.e_coins || 0) + (choice.e_coins || 0);
-    await base44.entities.PlayerProfile.update(p.id, { reputation: newRep, e_coins: newCoins });
+    await bharat01.entities.PlayerProfile.update(p.id, { reputation: newRep, e_coins: newCoins });
   }
-  await base44.entities.Task.update(taskId, {
+  await bharat01.entities.Task.update(taskId, {
     status: "completed", chosen_option: choice.label,
     reward_reputation: choice.reputation || 0, reward_e_coins: choice.e_coins || 0,
     risk: choice.risk || "",
@@ -177,9 +177,9 @@ export async function resolveTask(taskId, chosenIndex) {
 
 // Expire tasks past their deadline.
 export async function expireOverdueTasks(playerId) {
-  const pending = await base44.entities.Task.filter({ player_id: playerId, status: "pending" });
+  const pending = await bharat01.entities.Task.filter({ player_id: playerId, status: "pending" });
   const now = await getCurrentGameTime();
   const expired = pending.filter(t => t.deadline_game_time && new Date(t.deadline_game_time) < now);
-  for (const t of expired) await base44.entities.Task.update(t.id, { status: "expired" });
+  for (const t of expired) await bharat01.entities.Task.update(t.id, { status: "expired" });
   return expired.length;
 }

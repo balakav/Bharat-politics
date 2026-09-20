@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Gavel, ScrollText, CheckSquare, XSquare, Minus, Vote, Megaphone, Loader2 } from "lucide-react";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { isConstitutionalBill, requiredVotesFor } from "@/lib/billFlow";
@@ -27,20 +27,20 @@ function BillVotePanel({ channelKey, scope, stateId = "", speakerName, winners =
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const me = await base44.auth.me().catch(() => null);
+    const me = await bharat01.auth.me().catch(() => null);
     setIsAdmin(me?.role === "admin");
     if (me) {
-      const ps = await base44.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
+      const ps = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
       if (ps[0]) {
         setProfile(ps[0]);
-        const mems = await base44.entities.PartyMember.filter({ player_id: ps[0].player_id }).catch(() => []);
+        const mems = await bharat01.entities.PartyMember.filter({ player_id: ps[0].player_id }).catch(() => []);
         if (mems[0]) setMyMember(mems[0]);
       }
     }
-    const all = await base44.entities.Bill.list("-created_date", 500).catch(() => []);
+    const all = await bharat01.entities.Bill.list("-created_date", 500).catch(() => []);
     setBills(all.filter(b => b.scope === scope && (scope === "national" ? true : b.state_id === stateId)));
 
-    const rawSess = await base44.entities.ChatMessage.filter({ channel: SESSION }).catch(() => []);
+    const rawSess = await bharat01.entities.ChatMessage.filter({ channel: SESSION }).catch(() => []);
     const sess = [...rawSess].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
     const latest = sess[sess.length - 1];
     const parts = latest ? latest.message.split("|") : [];
@@ -51,7 +51,7 @@ function BillVotePanel({ channelKey, scope, stateId = "", speakerName, winners =
     const voteMap = {};
     const line = {};
     if (openBillId) {
-      const vot = await base44.entities.ChatMessage.filter({ channel: "billvote_" + openBillId }).catch(() => []);
+      const vot = await bharat01.entities.ChatMessage.filter({ channel: "billvote_" + openBillId }).catch(() => []);
       const sortedVot = [...vot].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
       for (const v of sortedVot) {
         const p = v.message.split("|");
@@ -67,7 +67,7 @@ function BillVotePanel({ channelKey, scope, stateId = "", speakerName, winners =
   useEffect(() => { load(); }, [load]);
   useAutoRefresh(load, 10000);
   useEffect(() => {
-    const unsub = base44.entities.ChatMessage.subscribe(e => {
+    const unsub = bharat01.entities.ChatMessage.subscribe(e => {
       const ch = e.data?.channel || "";
       if (ch === SESSION || ch.startsWith("billvote_")) load();
     });
@@ -105,8 +105,8 @@ function BillVotePanel({ channelKey, scope, stateId = "", speakerName, winners =
   async function openVoting(b) {
     setBusy(true);
     try {
-      await base44.entities.ChatMessage.create({ channel: SESSION, sender_id: "speaker", sender_name: "Speaker", message: "OPEN|" + b.id + "|" + b.title, message_type: "system" });
-      await base44.entities.ChatMessage.create({ channel: CHAT, sender_id: "speaker", sender_name: "Speaker", message: "📜 Bill voting opened: \"" + b.title + "\". " + memberLabel + "s, cast your votes.", message_type: "system" });
+      await bharat01.entities.ChatMessage.create({ channel: SESSION, sender_id: "speaker", sender_name: "Speaker", message: "OPEN|" + b.id + "|" + b.title, message_type: "system" });
+      await bharat01.entities.ChatMessage.create({ channel: CHAT, sender_id: "speaker", sender_name: "Speaker", message: "📜 Bill voting opened: \"" + b.title + "\". " + memberLabel + "s, cast your votes.", message_type: "system" });
       setResult(null);
       await load();
     } finally { setBusy(false); }
@@ -116,9 +116,9 @@ function BillVotePanel({ channelKey, scope, stateId = "", speakerName, winners =
     if (!session.billId || busy) return;
     setBusy(true);
     try {
-      const res = await base44.functions.invoke("votingAgent", { bill_id: session.billId, total_seats: totalSeats, party_seats: partySeats });
+      const res = await bharat01.functions.invoke("votingAgent", { bill_id: session.billId, total_seats: totalSeats, party_seats: partySeats });
       setResult(res.data);
-      await base44.entities.ChatMessage.create({ channel: SESSION, sender_id: "speaker", sender_name: "Speaker", message: "CLOSED", message_type: "system" });
+      await bharat01.entities.ChatMessage.create({ channel: SESSION, sender_id: "speaker", sender_name: "Speaker", message: "CLOSED", message_type: "system" });
       await load();
     } catch (e) {
       setResult({ error: (e && e.response && e.response.data && e.response.data.error) || (e && e.message) || "Tally failed" });
@@ -128,7 +128,7 @@ function BillVotePanel({ channelKey, scope, stateId = "", speakerName, winners =
 
   async function castVote(v) {
     if (!session.open || !isMember || !profile || busy) return;
-    await base44.entities.ChatMessage.create({ channel: "billvote_" + session.billId, sender_id: profile.player_id, sender_name: profile.username, message: profile.player_id + "|" + v + "|" + profile.username + "|" + myPartyName, message_type: "system" });
+    await bharat01.entities.ChatMessage.create({ channel: "billvote_" + session.billId, sender_id: profile.player_id, sender_name: profile.username, message: profile.player_id + "|" + v + "|" + profile.username + "|" + myPartyName, message_type: "system" });
     await load();
   }
 
@@ -136,8 +136,8 @@ function BillVotePanel({ channelKey, scope, stateId = "", speakerName, winners =
   // instruction to every party member on the floor.
   async function whipCast(v) {
     if (!session.open || !isWhip || !myPartyName || busy) return;
-    await base44.entities.ChatMessage.create({ channel: "billvote_" + session.billId, sender_id: profile.player_id, sender_name: profile.username, message: "PARTY|" + myPartyName + "|" + v + "|" + myPartyCount, message_type: "system" });
-    await base44.entities.ChatMessage.create({ channel: CHAT, sender_id: "whip", sender_name: "Whip · " + myPartyName, message: "🪢 Party line: all " + myPartyCount + " " + myPartyName + " " + memberLabel + "s " + (v === "free" ? "vote as they wish" : "vote " + v.toUpperCase()) + " on \"" + (activeBill ? activeBill.title : "") + "\".", message_type: "system" });
+    await bharat01.entities.ChatMessage.create({ channel: "billvote_" + session.billId, sender_id: profile.player_id, sender_name: profile.username, message: "PARTY|" + myPartyName + "|" + v + "|" + myPartyCount, message_type: "system" });
+    await bharat01.entities.ChatMessage.create({ channel: CHAT, sender_id: "whip", sender_name: "Whip · " + myPartyName, message: "🪢 Party line: all " + myPartyCount + " " + myPartyName + " " + memberLabel + "s " + (v === "free" ? "vote as they wish" : "vote " + v.toUpperCase()) + " on \"" + (activeBill ? activeBill.title : "") + "\".", message_type: "system" });
     await load();
   }
 

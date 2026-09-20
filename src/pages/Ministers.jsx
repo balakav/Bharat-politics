@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BHARAT_STATES, getStateById, NATION } from "@/lib/bharatStates";
 import { ArrowLeft, MessageCircle, Crown, Send, Globe2, Landmark, Loader, Bot } from "lucide-react";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
@@ -22,10 +22,10 @@ export default function Ministers() {
     const isNat = selected === "NAT";
     const stateId = isNat ? "" : selected;
     const scope = isNat ? "national" : "state";
-    const govs = await base44.entities.Government.filter({ type: scope, is_active: true }, "-created_date", 50);
+    const govs = await bharat01.entities.Government.filter({ type: scope, is_active: true }, "-created_date", 50);
     const gov = govs.find(g => isNat ? g.type === "national" : g.state_id === stateId) || govs[0];
     let mins = [];
-    if (gov) mins = await base44.entities.Minister.filter({ government_id: gov.id, is_active: true });
+    if (gov) mins = await bharat01.entities.Minister.filter({ government_id: gov.id, is_active: true });
     setMinisters(mins);
     setLoading(false);
   }, [selected]);
@@ -48,7 +48,7 @@ export default function Ministers() {
     setInput("");
     setTyping(true);
     try {
-      const res = await base44.functions.invoke("ministerChat", {
+      const res = await bharat01.functions.invoke("ministerChat", {
         minister: { player_name: active.player_name, position: active.position, portfolio: active.portfolio, party_name: active.party_name },
         scopeName,
         history: next.map(m => ({ role: m.role, text: m.text })),

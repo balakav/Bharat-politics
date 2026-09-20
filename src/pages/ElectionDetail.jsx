@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getStateById } from "@/lib/bharatStates";
 import { getConstituenciesForElection, getPositionForElection, declareResults, setElectionStatus } from "@/lib/bharatElectionService";
@@ -28,14 +28,14 @@ export default function ElectionDetail() {
 
   const loadData = useCallback(async () => {
     if (completedRef.current) return; // stop polling once results are declared
-    const me = await base44.auth.me();
+    const me = await bharat01.auth.me();
     setIsAdmin(me.role === "admin");
     setUserId(me.id);
-    const el = await base44.entities.Election.get(id);
+    const el = await bharat01.entities.Election.get(id);
     const [cands, profiles, allAlliances] = await Promise.all([
-      base44.entities.Candidature.filter({ election_id: id }, '-votes_received', 1000),
-      base44.entities.PlayerProfile.filter({ created_by_id: me.id }),
-      base44.entities.Alliance.list(),
+      bharat01.entities.Candidature.filter({ election_id: id }, '-votes_received', 1000),
+      bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }),
+      bharat01.entities.Alliance.list(),
     ]);
     if (el?.results_declared || el?.status === "completed") completedRef.current = true;
     setElection(el);
@@ -44,7 +44,7 @@ export default function ElectionDetail() {
     if (profiles.length > 0) {
       setProfile(profiles[0]);
       if (profiles[0].party_id) {
-        try { setMyParty(await base44.entities.PoliticalParty.get(profiles[0].party_id)); } catch (e) {}
+        try { setMyParty(await bharat01.entities.PoliticalParty.get(profiles[0].party_id)); } catch (e) {}
       }
     }
     setLoading(false);
@@ -63,7 +63,7 @@ export default function ElectionDetail() {
   }
 
   async function handleRemoveCandidate(c) {
-    await base44.entities.Candidature.delete(c.id);
+    await bharat01.entities.Candidature.delete(c.id);
     await loadData();
   }
 

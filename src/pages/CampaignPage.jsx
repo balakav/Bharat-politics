@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { useParams, useNavigate } from "react-router-dom";
 import { CAMPAIGN_TYPES, formatCoins } from "@/lib/gameData";
 import { ArrowLeft, Megaphone, Mic, Image, Tv, Home, Share2, CheckCircle } from "lucide-react";
@@ -18,10 +18,10 @@ export default function CampaignPage() {
   }, []);
 
   async function loadData() {
-    const me = await base44.auth.me();
+    const me = await bharat01.auth.me();
     const [profiles, camps] = await Promise.all([
-      base44.entities.PlayerProfile.filter({ created_by_id: me.id }),
-      base44.entities.Campaign.filter({ candidature_id: candidatureId || "" }),
+      bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }),
+      bharat01.entities.Campaign.filter({ candidature_id: candidatureId || "" }),
     ]);
     if (profiles.length > 0) setProfile(profiles[0]);
     setCampaigns(camps);
@@ -30,7 +30,7 @@ export default function CampaignPage() {
   async function runCampaign(ct) {
     if (!profile || profile.e_coins < ct.cost) return;
     setRunning(ct.type);
-    await base44.entities.Campaign.create({
+    await bharat01.entities.Campaign.create({
       player_id: profile.player_id,
       election_id: electionId,
       candidature_id: candidatureId || "",
@@ -40,7 +40,7 @@ export default function CampaignPage() {
       impact: ct.impact,
       description: ct.description,
     });
-    await base44.entities.PlayerProfile.update(profile.id, {
+    await bharat01.entities.PlayerProfile.update(profile.id, {
       e_coins: profile.e_coins - ct.cost,
       reputation: Math.min(100, (profile.reputation || 50) + Math.floor(ct.impact / 2)),
     });

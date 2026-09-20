@@ -1,5 +1,5 @@
 
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 
 // Central election-results source: ONE cached loader that every screen reads
 // from (Assembly, Past Results, Election Data, Parliament), so results are
@@ -22,7 +22,7 @@ export function invalidateResultsCache() { cache.clear(); }
 // All completed Bharat elections (national + state), newest first.
 export async function getCompletedElections() {
   return cached("elections:completed", async () => {
-    const all = await base44.entities.Election.filter({ results_declared: true });
+    const all = await bharat01.entities.Election.filter({ results_declared: true });
     return all
       .filter(e => e.election_type === "national" || e.state_id)
       .sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
@@ -38,7 +38,7 @@ export async function getCompletedElection(type, stateId = "") {
 // Winning candidatures of a completed election.
 export async function getElectionWinners(electionId) {
   return cached("winners:" + electionId, () =>
-    base44.entities.Candidature.filter({ election_id: electionId, result: "won" }, undefined, 1000));
+    bharat01.entities.Candidature.filter({ election_id: electionId, result: "won" }, undefined, 1000));
 }
 
 // { election, winners } for a state assembly.
@@ -57,5 +57,5 @@ export async function getNationalResults() {
 
 // Permanent election records (winners archive).
 export async function getElectionRecords() {
-  return cached("records", () => base44.entities.ElectionRecord.list("-election_date", 1000));
+  return cached("records", () => bharat01.entities.ElectionRecord.list("-election_date", 1000));
 }

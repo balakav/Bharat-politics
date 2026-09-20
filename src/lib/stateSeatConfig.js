@@ -2,7 +2,7 @@
 // Admin-editable seat configuration (DB → runtime). Applies StateSeatConfig
 // records onto the in-memory BHARAT_STATES / NATION objects in place, so every
 // sync consumer (election engine, map, validation) picks up admin changes.
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BHARAT_STATES, NATION } from "@/lib/bharatStates";
 import { logAction } from "@/lib/audit";
 
@@ -26,15 +26,15 @@ export function applyToRuntime(records) {
 
 // Fetch DB overrides and apply them to the runtime config (app-wide, on load).
 export async function loadSeatConfigs() {
-  const records = await base44.entities.StateSeatConfig.list();
+  const records = await bharat01.entities.StateSeatConfig.list();
   applyToRuntime(records);
   return records;
 }
 
 // Replace all stored config with the given values, apply to runtime, audit.
 export async function saveSeatConfigs({ states, national, actor }) {
-  await base44.entities.StateSeatConfig.deleteMany({ config_type: "state" });
-  await base44.entities.StateSeatConfig.deleteMany({ config_type: "national" });
+  await bharat01.entities.StateSeatConfig.deleteMany({ config_type: "state" });
+  await bharat01.entities.StateSeatConfig.deleteMany({ config_type: "national" });
   const records = states.map(s => ({
     config_type: "state",
     state_id: s.id,
@@ -49,7 +49,7 @@ export async function saveSeatConfigs({ states, national, actor }) {
     lok_sabha_total: Number(national.lokSabhaSeats),
     lok_sabha_majority: Number(national.lokSabhaMajority),
   });
-  await base44.entities.StateSeatConfig.bulkCreate(records);
+  await bharat01.entities.StateSeatConfig.bulkCreate(records);
   applyToRuntime(records);
   try {
     logAction({

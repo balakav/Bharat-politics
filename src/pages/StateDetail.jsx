@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Landmark, Building2, MapPin, Crown, AlertTriangle, ChevronRight } from "lucide-react";
 import { getStateById } from "@/lib/bharatStates";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getAssemblyResults, getNationalResults } from "@/lib/electionResults";
 import { getNationalConstituencies } from "@/lib/bharatElectionService";
 import PartySeatBar from "@/components/election/PartySeatBar";
@@ -25,9 +25,9 @@ export default function StateDetail() {
       try {
         // Live data only — no simulated election runs.
         const [govs, els, nat] = await Promise.all([
-          base44.entities.Government.filter({ state_id: state.id }),
-          base44.entities.Election.filter({ state_id: state.id }),
-          base44.entities.Election.filter({ election_type: "national", results_declared: false }),
+          bharat01.entities.Government.filter({ state_id: state.id }),
+          bharat01.entities.Election.filter({ state_id: state.id }),
+          bharat01.entities.Election.filter({ election_type: "national", results_declared: false }),
         ]);
         setGovData(govs.find(g => g.is_active) || govs[0] || null);
         setElections(els);

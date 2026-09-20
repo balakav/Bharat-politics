@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getStateById, BHARAT_STATES } from "@/lib/bharatStates";
 import { NATIONAL_MINISTRIES, STATE_MINISTRIES } from "@/lib/ministries";
 import { Building2, CheckCircle, Circle, ChevronRight, MapPin, Plus, FileCheck } from "lucide-react";
@@ -25,19 +25,19 @@ export default function MinistryHub() {
   useEffect(() => { load(); }, []);
 
   async function load() {
-    const me = await base44.auth.me().catch(() => null);
+    const me = await bharat01.auth.me().catch(() => null);
     setIsAdmin(me?.role === "admin");
     if (me) {
-      const ps = await base44.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
+      const ps = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
       if (ps[0]) {
-        const offices = await base44.entities.Minister.filter({ player_id: ps[0].player_id, is_active: true }).catch(() => []);
+        const offices = await bharat01.entities.Minister.filter({ player_id: ps[0].player_id, is_active: true }).catch(() => []);
         setMyOffices(offices);
       }
     }
     const [recs, mins, fls] = await Promise.all([
-      base44.entities.Ministry.list("-created_date", 500).catch(() => []),
-      base44.entities.Minister.filter({ is_active: true }).catch(() => []),
-      base44.entities.MinistryFile.list("-created_date", 500).catch(() => []),
+      bharat01.entities.Ministry.list("-created_date", 500).catch(() => []),
+      bharat01.entities.Minister.filter({ is_active: true }).catch(() => []),
+      bharat01.entities.MinistryFile.list("-created_date", 500).catch(() => []),
     ]);
     setRecords(recs);
     setMinisters(mins);
@@ -57,7 +57,7 @@ export default function MinistryHub() {
     if (!title) return;
     const works = parseWorks(m);
     works.push({ title, status: "pending" });
-    await base44.entities.Ministry.update(m.id, { works: JSON.stringify(works) });
+    await bharat01.entities.Ministry.update(m.id, { works: JSON.stringify(works) });
     setWorkInputs(p => ({ ...p, [m.id]: "" }));
     load();
   }
@@ -65,7 +65,7 @@ export default function MinistryHub() {
   async function toggleWork(m, i) {
     const works = parseWorks(m);
     works[i] = { ...works[i], status: works[i].status === "done" ? "pending" : "done" };
-    await base44.entities.Ministry.update(m.id, { works: JSON.stringify(works) });
+    await bharat01.entities.Ministry.update(m.id, { works: JSON.stringify(works) });
     load();
   }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Newspaper, Tv, AlertCircle } from "lucide-react";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 
@@ -20,7 +20,7 @@ export default function News() {
   }
 
   async function refreshNews() {
-    const items = await base44.entities.NewsItem.list('-created_date', 50);
+    const items = await bharat01.entities.NewsItem.list('-created_date', 50);
     // Drop old randomly generated ambient stories — only real game events
     // (elections, laws, protests, deals, parties) are valid news.
     setNews(items.filter(n => (n.related_type || "") !== "ambient"));

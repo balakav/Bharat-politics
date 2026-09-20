@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BHARAT_STATES, NATION, getStateById, generateAssemblyConstituencies, generateLokSabhaConstituencies } from "@/lib/bharatStates";
 import { createElection, createNationalElection, createByElection, setElectionStatus, declareResults } from "@/lib/bharatElectionService";
 import { Megaphone, Landmark, Building2, Globe2, ChevronRight, Vote, RotateCcw } from "lucide-react";
@@ -18,9 +18,9 @@ export default function AdminElections() {
   const [beConstituency, setBeConstituency] = useState("");
 
   const load = useCallback(async () => {
-    const me = await base44.auth.me();
+    const me = await bharat01.auth.me();
     if (me.role !== "admin") { navigate("/"); return; }
-    const all = await base44.entities.Election.list("-created_date", 200);
+    const all = await bharat01.entities.Election.list("-created_date", 200);
     setElections(all.filter(e => e.election_type === "national" || e.state_id));
     setReady(true);
   }, [navigate]);

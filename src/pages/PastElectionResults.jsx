@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { useNavigate } from "react-router-dom";
 import ConstituencyResult from "@/components/election/ConstituencyResult";
 import { BHARAT_STATES, NATION, getStateById } from "@/lib/bharatStates";
@@ -26,7 +26,7 @@ export default function PastElectionResults() {
   }
 
   async function exportAllToCSV() {
-    const records = await base44.entities.ElectionRecord.list("-election_date", 5000);
+    const records = await bharat01.entities.ElectionRecord.list("-election_date", 5000);
     const headers = ["Election Date", "Election Type", "Election Title", "State", "Position", "Constituency", "Winner Name", "Winner Party", "Winner Party Short", "Winner Votes", "Runner-up Name", "Runner-up Party", "Runner-up Votes", "Vote Margin"];
     const rows = records.map(r => [
       r.election_date || "", r.election_type || "", r.election_title || "", r.state_name || "",
@@ -47,7 +47,7 @@ export default function PastElectionResults() {
   async function selectElection(el) {
     setSelectedElection(el);
     setLoading(true);
-    const cands = await base44.entities.Candidature.filter({ election_id: el.id }, '-votes_received', 5000);
+    const cands = await bharat01.entities.Candidature.filter({ election_id: el.id }, '-votes_received', 5000);
     setCandidates(cands);
     setLoading(false);
   }

@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { BHARAT_STATES, NATION } from "@/lib/bharatStates";
 import { Upload, Download, FileSpreadsheet, CheckCircle, AlertTriangle } from "lucide-react";
 
@@ -48,8 +48,8 @@ export default function BulkCandidateUpload({ election, party, onDone }) {
     if (!file || busy) return;
     setBusy(true); setError(""); setResult(null);
     try {
-      const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
-      const res = await base44.functions.invoke("importCandidates", {
+      const { file_url } = await bharat01.integrations.Core.UploadPublicFile({ file });
+      const res = await bharat01.functions.invoke("importCandidates", {
         file_url,
         election_id: election.id,
         party_id: party.id,

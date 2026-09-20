@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Gavel, Megaphone, Vote, CheckSquare, XSquare, Minus, Send } from "lucide-react";
 
 // Parliament floor: speaker-controlled motions + per-seat voting + live chat.
@@ -28,19 +28,19 @@ export default function ParliamentFloor({ channelKey, speakerName, totalSeats, s
 
   useEffect(() => {
     (async () => {
-      const me = await base44.auth.me().catch(() => null);
+      const me = await bharat01.auth.me().catch(() => null);
       setIsAdmin(me?.role === "admin");
       if (me) {
-        const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
+        const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }).catch(() => []);
         if (profiles[0]) {
           setProfile(profiles[0]);
-          const memberships = await base44.entities.PartyMember.filter({ player_id: profiles[0].player_id }).catch(() => []);
+          const memberships = await bharat01.entities.PartyMember.filter({ player_id: profiles[0].player_id }).catch(() => []);
           if (memberships[0]) setMyMember(memberships[0]);
         }
       }
       loadAll();
     })();
-    const unsub = base44.entities.ChatMessage.subscribe(event => {
+    const unsub = bharat01.entities.ChatMessage.subscribe(event => {
       const ch = event.data?.channel;
       if (ch === CHAT || ch === SESSION || ch === VOTE) loadAll();
     });
@@ -49,9 +49,9 @@ export default function ParliamentFloor({ channelKey, speakerName, totalSeats, s
 
   async function loadAll() {
     const [sess, vot, chat] = await Promise.all([
-      base44.entities.ChatMessage.filter({ channel: SESSION }).catch(() => []),
-      base44.entities.ChatMessage.filter({ channel: VOTE }).catch(() => []),
-      base44.entities.ChatMessage.filter({ channel: CHAT }).catch(() => []),
+      bharat01.entities.ChatMessage.filter({ channel: SESSION }).catch(() => []),
+      bharat01.entities.ChatMessage.filter({ channel: VOTE }).catch(() => []),
+      bharat01.entities.ChatMessage.filter({ channel: CHAT }).catch(() => []),
     ]);
     const byTime = (a, b) => new Date(a.created_date) - new Date(b.created_date);
     const latestSess = [...sess].sort(byTime).at(-1);
@@ -76,8 +76,8 @@ export default function ParliamentFloor({ channelKey, speakerName, totalSeats, s
 
   async function startVote() {
     if (!newTitle.trim()) return;
-    await base44.entities.ChatMessage.create({ channel: SESSION, sender_id: "speaker", sender_name: "Speaker", message: `VOTE_START|${newTitle.trim()}|${newType}`, message_type: "system" });
-    await base44.entities.ChatMessage.create({ channel: CHAT, sender_id: "speaker", sender_name: "Speaker", message: `🗳️ Voting opened: "${newTitle.trim()}" (${newType}). MPs, cast your votes.`, message_type: "system" });
+    await bharat01.entities.ChatMessage.create({ channel: SESSION, sender_id: "speaker", sender_name: "Speaker", message: `VOTE_START|${newTitle.trim()}|${newType}`, message_type: "system" });
+    await bharat01.entities.ChatMessage.create({ channel: CHAT, sender_id: "speaker", sender_name: "Speaker", message: `🗳️ Voting opened: "${newTitle.trim()}" (${newType}). MPs, cast your votes.`, message_type: "system" });
     setShowForm(false); setNewTitle(""); setNewDesc("");
   }
 
@@ -87,19 +87,19 @@ export default function ParliamentFloor({ channelKey, speakerName, totalSeats, s
     const no = vals.filter(v => v === "no").length;
     const abstain = vals.filter(v => v === "abstain").length;
     const result = yes > no ? "PASSED" : "FAILED";
-    await base44.entities.ChatMessage.create({ channel: SESSION, sender_id: "speaker", sender_name: "Speaker", message: "VOTE_END", message_type: "system" });
-    await base44.entities.ChatMessage.create({ channel: CHAT, sender_id: "speaker", sender_name: "Speaker", message: `⚖️ Motion "${motion.title}" — ${result}. YES: ${yes} · NO: ${no} · ABSTAIN: ${abstain}`, message_type: "system" });
+    await bharat01.entities.ChatMessage.create({ channel: SESSION, sender_id: "speaker", sender_name: "Speaker", message: "VOTE_END", message_type: "system" });
+    await bharat01.entities.ChatMessage.create({ channel: CHAT, sender_id: "speaker", sender_name: "Speaker", message: `⚖️ Motion "${motion.title}" — ${result}. YES: ${yes} · NO: ${no} · ABSTAIN: ${abstain}`, message_type: "system" });
   }
 
   async function castVote(v) {
     if (!selectedSeat || phase !== "voting" || !canParticipate) return;
-    await base44.entities.ChatMessage.create({ channel: VOTE, sender_id: profile?.player_id || "guest", sender_name: profile?.username || "Guest", message: `${selectedSeat}|${v}`, message_type: "system" });
+    await bharat01.entities.ChatMessage.create({ channel: VOTE, sender_id: profile?.player_id || "guest", sender_name: profile?.username || "Guest", message: `${selectedSeat}|${v}`, message_type: "system" });
     setVotes(prev => ({ ...prev, [selectedSeat]: v }));
   }
 
   async function sendChat() {
     if (!input.trim() || !canParticipate) return;
-    await base44.entities.ChatMessage.create({ channel: CHAT, sender_id: profile?.player_id || "guest", sender_name: profile?.username || "Guest", sender_photo: profile?.photo_url || "", message: input.trim(), message_type: "text" });
+    await bharat01.entities.ChatMessage.create({ channel: CHAT, sender_id: profile?.player_id || "guest", sender_name: profile?.username || "Guest", sender_photo: profile?.photo_url || "", message: input.trim(), message_type: "text" });
     setInput("");
     // Close the on-screen keyboard after sending.
     document.activeElement?.blur?.();
@@ -127,8 +127,8 @@ export default function ParliamentFloor({ channelKey, speakerName, totalSeats, s
 
   async function whipCast(v) {
     if (!isWhip || phase !== "voting" || !myPartyName) return;
-    await base44.entities.ChatMessage.create({ channel: VOTE, sender_id: profile?.player_id || "guest", sender_name: profile?.username || "Guest", message: `PARTY|${myPartyName}|${v}|${myPartyMLAs}`, message_type: "system" });
-    await base44.entities.ChatMessage.create({ channel: CHAT, sender_id: "speaker", sender_name: "Whip", message: `🪢 ${myPartyName} whip: all ${myPartyMLAs} ${memberLabel}s ${v === "free" ? "are free to vote" : `vote ${v.toUpperCase()}`}`, message_type: "system" });
+    await bharat01.entities.ChatMessage.create({ channel: VOTE, sender_id: profile?.player_id || "guest", sender_name: profile?.username || "Guest", message: `PARTY|${myPartyName}|${v}|${myPartyMLAs}`, message_type: "system" });
+    await bharat01.entities.ChatMessage.create({ channel: CHAT, sender_id: "speaker", sender_name: "Whip", message: `🪢 ${myPartyName} whip: all ${myPartyMLAs} ${memberLabel}s ${v === "free" ? "are free to vote" : `vote ${v.toUpperCase()}`}`, message_type: "system" });
     loadAll();
   }
 

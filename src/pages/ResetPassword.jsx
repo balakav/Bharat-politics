@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,7 @@ export default function ResetPassword() {
     }
     setLoading(true);
     try {
-      await base44.auth.resetPassword({ resetToken, newPassword });
+      await bharat01.auth.resetPassword({ resetToken, newPassword });
       window.location.href = "/login";
     } catch (err) {
       setError(err.message || "Failed to reset password");

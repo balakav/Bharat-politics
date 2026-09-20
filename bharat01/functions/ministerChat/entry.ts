@@ -10,8 +10,8 @@ function persona(m, scopeName) {
 
 export default async function(req) {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const bharat01 = createClientFromRequest(req);
+    const user = await bharat01.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
@@ -28,7 +28,7 @@ export default async function(req) {
       .join('\n');
     const prompt = `${persona(minister, scopeName)}\n\nConversation so far:\n${convo}\n\nReply as ${minister.player_name}:`;
 
-    const res = await base44.asServiceRole.integrations.Core.InvokeLLM({ prompt });
+    const res = await bharat01.asServiceRole.integrations.Core.InvokeLLM({ prompt });
     const reply = typeof res === 'string' ? res : (res?.response || res?.text || JSON.stringify(res));
     return Response.json({ reply });
   } catch (error) {

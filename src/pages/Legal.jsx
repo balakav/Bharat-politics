@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { runEnforcementSweep, markProven } from "@/lib/enforcementAI";
 import { fileCourtCase, advanceCourtCase, runCourtDocket } from "@/lib/courtAI";
 import { ArrowLeft, ShieldAlert, Scale, Gavel, Search, Play, FileText, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
@@ -21,15 +21,15 @@ export default function Legal() {
 
   const loadData = useCallback(async () => {
     try {
-      const me = await base44.auth.me();
+      const me = await bharat01.auth.me();
       setIsAdmin(me.role === "admin");
-      const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: me.id });
+      const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id });
       const p = profiles[0];
       setProfile(p);
       const targetId = p?.player_id;
       const [invs, allCases] = await Promise.all([
-        targetId ? base44.entities.Investigation.filter({ target_player_id: targetId }, "-created_date", 50) : Promise.resolve([]),
-        base44.entities.CourtCase.list("-created_date", 100),
+        targetId ? bharat01.entities.Investigation.filter({ target_player_id: targetId }, "-created_date", 50) : Promise.resolve([]),
+        bharat01.entities.CourtCase.list("-created_date", 100),
       ]);
       setInvestigations(invs);
       // Every case I'm involved in — as defendant OR complainant, with its stage.

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
@@ -16,8 +16,8 @@ export default function CreateParty() {
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    base44.auth.me().then(async me => {
-      const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: me.id });
+    bharat01.auth.me().then(async me => {
+      const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id });
       if (profiles.length > 0) setProfile(profiles[0]);
     });
   }, []);
@@ -25,14 +25,14 @@ export default function CreateParty() {
   async function handleCreate() {
     if (!name.trim() || !shortName.trim() || !profile) return;
     // One party per player — leave the current party before creating a new one.
-    const existing = await base44.entities.PartyMember.filter({ player_id: profile.player_id }).catch(() => []);
+    const existing = await bharat01.entities.PartyMember.filter({ player_id: profile.player_id }).catch(() => []);
     if (existing.length > 0) {
       setErr(`You are already a member of ${existing[0].party_name} — leave that party before creating a new one.`);
       return;
     }
     setErr("");
     setCreating(true);
-    const party = await base44.entities.PoliticalParty.create({
+    const party = await bharat01.entities.PoliticalParty.create({
       name: name.trim(),
       short_name: shortName.trim().toUpperCase(),
       description,
@@ -44,14 +44,14 @@ export default function CreateParty() {
       member_count: 1,
       party_fund: 0,
     });
-    await base44.entities.PartyMember.create({
+    await bharat01.entities.PartyMember.create({
       player_id: profile.player_id,
       player_name: profile.username,
       party_id: party.id,
       party_name: party.name,
       designation: "President",
     });
-    await base44.entities.PlayerProfile.update(profile.id, {
+    await bharat01.entities.PlayerProfile.update(profile.id, {
       party_id: party.id,
       party_name: party.name,
     });

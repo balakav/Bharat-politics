@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { UserPlus, CheckCircle } from "lucide-react";
 
 export default function UserInvite() {
@@ -13,7 +13,7 @@ export default function UserInvite() {
   async function invite() {
     setBusy(true); setMsg(""); setError("");
     try {
-      await base44.users.inviteUser(email.trim(), role);
+      await bharat01.users.inviteUser(email.trim(), role);
       setMsg(`Invitation sent to ${email}.`);
       setEmail("");
     } catch (e) {

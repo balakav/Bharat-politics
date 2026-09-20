@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import GameConfigEditor from "@/components/admin/GameConfigEditor";
 import SalaryConfigEditor from "@/components/admin/SalaryConfigEditor";
 import AuditViewer from "@/components/admin/AuditViewer";
@@ -39,14 +39,14 @@ export default function Admin() {
 
   useEffect(() => {
     (async () => {
-      const me = await base44.auth.me().catch(() => ({ role: "user" }));
+      const me = await bharat01.auth.me().catch(() => ({ role: "user" }));
       setIsAdmin(me.role === "admin");
       if (me.role !== "admin") return;
       // quick entity counts for the overview
       const names = ["Election", "Candidature", "Government", "Minister", "PlayerProfile", "PoliticalParty", "Bill", "Law", "Budget", "Treasury", "TaxConfig", "Task", "Investigation", "CourtCase", "PopularityScore", "NewsItem", "AuditLog"];
       const counts = {};
       for (const n of names) {
-        try { const list = await base44.entities[n].filter({}); counts[n] = list.length; } catch (e) { counts[n] = "—"; }
+        try { const list = await bharat01.entities[n].filter({}); counts[n] = list.length; } catch (e) { counts[n] = "—"; }
       }
       setStats(counts);
     })();

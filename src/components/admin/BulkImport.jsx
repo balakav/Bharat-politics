@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { Upload, FileUp, CheckCircle, AlertTriangle } from "lucide-react";
 
 const ENTITY_OPTIONS = [
@@ -63,7 +63,7 @@ export default function BulkImport() {
       for (let i = 0; i < rows.length; i += 400) {
         const batch = rows.slice(i, i + 400);
         try {
-          await base44.entities[entity].bulkCreate(batch);
+          await bharat01.entities[entity].bulkCreate(batch);
           ok += batch.length;
         } catch (e) {
           fail += batch.length;

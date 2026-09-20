@@ -5,7 +5,7 @@ import { runCourtDocket } from "@/lib/courtAI";
 import { generateNewsBatch } from "@/lib/newsAI";
 import { recomputeGovernmentPopularity, recomputePartyPopularity } from "@/lib/popularity";
 import { BHARAT_STATES, getStateById } from "@/lib/bharatStates";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { ArrowLeft, Bot, Search, Gavel, Newspaper, TrendingUp, Play, Globe2 } from "lucide-react";
 
 export default function AdminAI() {
@@ -27,7 +27,7 @@ export default function AdminAI() {
 
   async function recomputeAll(scope, stateId) {
     await recomputeGovernmentPopularity(scope, stateId);
-    const records = await base44.entities.ElectionRecord.filter({ election_type: scope === "national" ? "national" : "vidhan_sabha" });
+    const records = await bharat01.entities.ElectionRecord.filter({ election_type: scope === "national" ? "national" : "vidhan_sabha" });
     const scoped = records.filter(r => scope === "national" ? true : r.state_id === stateId);
     const parties = new Set(scoped.map(r => r.winner_party_short || r.winner_party).filter(Boolean));
     for (const p of [...parties].slice(0, 6)) await recomputePartyPopularity(p, scope, stateId);

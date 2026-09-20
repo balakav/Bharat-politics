@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { NATION } from "@/lib/bharatStates";
 import { Crown, CheckCircle, Handshake, XCircle, Landmark, Clock, Send } from "lucide-react";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
@@ -26,15 +26,15 @@ export default function FormationRequests() {
   useAutoRefresh(loadData, 30000);
 
   async function loadData() {
-    const me = await base44.auth.me();
-    const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: me.id });
+    const me = await bharat01.auth.me();
+    const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id });
     if (profiles.length === 0) { setLoading(false); return; }
     const p = profiles[0];
     setProfile(p);
 
     const [myParties, allReqs] = await Promise.all([
-      base44.entities.PoliticalParty.filter({ president_id: p.player_id }),
-      base44.entities.FormationRequest.filter({ status: "sent" }),
+      bharat01.entities.PoliticalParty.filter({ president_id: p.player_id }),
+      bharat01.entities.FormationRequest.filter({ status: "sent" }),
     ]);
     const myPartyIds = myParties.map(x => x.id);
     const mine = allReqs.filter(r => myPartyIds.includes(r.party_id) || (r.president_id && r.president_id === p.player_id));
@@ -45,8 +45,8 @@ export default function FormationRequests() {
     const sup = {};
     for (const r of mine) {
       const [winners, srs] = await Promise.all([
-        base44.entities.Candidature.filter({ election_id: r.election_id, result: "won" }, undefined, 1000),
-        base44.entities.SupportRequest.filter({ formation_request_id: r.id }),
+        bharat01.entities.Candidature.filter({ election_id: r.election_id, result: "won" }, undefined, 1000),
+        bharat01.entities.SupportRequest.filter({ formation_request_id: r.id }),
       ]);
       const counts = {};
       for (const w of winners) {
@@ -94,11 +94,11 @@ export default function FormationRequests() {
     setBusy(req.id);
     setMsg("");
     try {
-      const allParties = await base44.entities.PoliticalParty.list();
+      const allParties = await bharat01.entities.PoliticalParty.list();
       for (const name of toSend) {
         const target = allParties.find(x => x.name === name);
         const seats = (seatData[req.id] || []).find(x => x.name === name)?.seats || 0;
-        await base44.entities.SupportRequest.create({
+        await bharat01.entities.SupportRequest.create({
           formation_request_id: req.id,
           election_id: req.election_id,
           scope: req.scope,
@@ -141,7 +141,7 @@ export default function FormationRequests() {
       const headName = head?.player_name || profile.username;
       const coalition = acceptedParties(req);
       const proofType = own >= (req.majority_mark || 0) ? "single" : "alliance";
-      const gov = await base44.entities.Government.create({
+      const gov = await bharat01.entities.Government.create({
         type: isNational ? "national" : "state",
         election_id: req.election_id,
         state_id: isNational ? "" : (req.state_id || ""),
@@ -155,7 +155,7 @@ export default function FormationRequests() {
         cabinet: JSON.stringify({ status: proofType === "single" ? "majority" : "coalition", total_seats: total, majority_mark: req.majority_mark }),
         is_active: true,
       });
-      await base44.entities.Minister.create({
+      await bharat01.entities.Minister.create({
         scope: req.scope,
         state_id: isNational ? "" : (req.state_id || ""),
         government_id: gov.id,
@@ -168,7 +168,7 @@ export default function FormationRequests() {
         appointed_game_time: new Date().toISOString(),
         is_active: true,
       });
-      await base44.entities.FormationRequest.update(req.id, {
+      await bharat01.entities.FormationRequest.update(req.id, {
         status: "proven",
         proof_type: proofType,
         coalition_party_names: coalition,
@@ -176,9 +176,9 @@ export default function FormationRequests() {
         government_id: gov.id,
       });
       if (!head || head.player_id === profile.player_id) {
-        await base44.entities.PlayerProfile.update(profile.id, { position_held: isNational ? "PM" : "CM" });
+        await bharat01.entities.PlayerProfile.update(profile.id, { position_held: isNational ? "PM" : "CM" });
       }
-      await base44.entities.NewsItem.create({
+      await bharat01.entities.NewsItem.create({
         title: `🏛️ ${headName} sworn in as ${headTitle} of ${isNational ? NATION.name : req.state_name}`,
         content: `${req.party_name} proved majority with ${total} seats (${own} own${coalition.length ? ` + support from ${coalition.join(", ")}` : ""}). Majority mark: ${req.majority_mark}.`,
         category: "politics",
@@ -197,7 +197,7 @@ export default function FormationRequests() {
   async function reject(req) {
     setBusy(req.id);
     try {
-      await base44.entities.FormationRequest.update(req.id, { status: "failed", note: "Party declined / could not prove majority." });
+      await bharat01.entities.FormationRequest.update(req.id, { status: "failed", note: "Party declined / could not prove majority." });
       await loadData();
     } catch (e) {}
     setBusy("");

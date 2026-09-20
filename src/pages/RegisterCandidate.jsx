@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { useParams, useNavigate } from "react-router-dom";
 import { getStateById } from "@/lib/bharatStates";
 import { getConstituenciesForElection } from "@/lib/bharatElectionService";
@@ -31,13 +31,13 @@ export default function RegisterCandidate() {
 
   async function loadData() {
     const [el, me] = await Promise.all([
-      base44.entities.Election.get(id),
-      base44.auth.me(),
+      bharat01.entities.Election.get(id),
+      bharat01.auth.me(),
     ]);
     setElection(el);
     const [profiles, pts] = await Promise.all([
-      base44.entities.PlayerProfile.filter({ created_by_id: me.id }),
-      base44.entities.PoliticalParty.list(),
+      bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }),
+      bharat01.entities.PoliticalParty.list(),
     ]);
     if (profiles.length > 0) setProfile(profiles[0]);
     setIsAdmin(me?.role === "admin");
@@ -65,7 +65,7 @@ export default function RegisterCandidate() {
     const isPartyPresident = party?.president_id === profile.player_id;
     const ticketStatus = (isIndependent || isPartyPresident) ? "approved" : "pending";
     const ticketNumber = (isIndependent || isPartyPresident) ? "TICKET-" + Date.now().toString(36).toUpperCase() : "";
-    await base44.entities.Candidature.create({
+    await bharat01.entities.Candidature.create({
       election_id: id,
       election_type: election.election_type,
       player_id: profile.player_id,
@@ -82,11 +82,11 @@ export default function RegisterCandidate() {
       ticket_status: ticketStatus,
       ticket_number: ticketNumber,
     });
-    await base44.entities.PlayerProfile.update(profile.id, {
+    await bharat01.entities.PlayerProfile.update(profile.id, {
       elections_contested: (profile.elections_contested || 0) + 1,
     });
     if (!isIndependent && !isPartyPresident) {
-      await base44.entities.NewsItem.create({
+      await bharat01.entities.NewsItem.create({
         title: `🎫 New Ticket Request from ${profile.username}`,
         content: `${profile.username} has requested a ${party.name} ticket for ${constituency} in ${election.title}. The party president needs to review and approve this request.`,
         category: "politics",

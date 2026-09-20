@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Users, Coins, UserPlus, Shield, Crown, ChevronDown, LogOut } from "lucide-react";
 import { formatCoins } from "@/lib/gameData";
@@ -28,16 +28,16 @@ export default function PartyDetail() {
 
   async function loadData() {
     const [pt, mems, me] = await Promise.all([
-      base44.entities.PoliticalParty.get(id),
-      base44.entities.PartyMember.filter({ party_id: id }),
-      base44.auth.me(),
+      bharat01.entities.PoliticalParty.get(id),
+      bharat01.entities.PartyMember.filter({ party_id: id }),
+      bharat01.auth.me(),
     ]);
     setParty(pt);
     setMembers(mems);
-    const profiles = await base44.entities.PlayerProfile.filter({ created_by_id: me.id });
+    const profiles = await bharat01.entities.PlayerProfile.filter({ created_by_id: me.id });
     if (profiles.length > 0) setProfile(profiles[0]);
     try {
-      const tickets = await base44.entities.Candidature.filter({ party_id: id, ticket_status: "pending" });
+      const tickets = await bharat01.entities.Candidature.filter({ party_id: id, ticket_status: "pending" });
       setPendingTickets(tickets);
     } catch (e) {}
     setLoading(false);
@@ -51,7 +51,7 @@ export default function PartyDetail() {
     if (!profile || isMember) return;
     setJoining(true); setJoinError("");
     // One party per player — they must leave their current party first.
-    const existing = await base44.entities.PartyMember.filter({ player_id: profile.player_id }).catch(() => []);
+    const existing = await bharat01.entities.PartyMember.filter({ player_id: profile.player_id }).catch(() => []);
     if (existing.length > 0) {
       setJoinError(`You are already a member of ${existing[0].party_name} — leave that party first, then join or create a new one.`);
       setJoining(false);
@@ -59,7 +59,7 @@ export default function PartyDetail() {
     }
     const isFirstMember = members.length === 0;
     const designation = isFirstMember ? "President" : "Member";
-    await base44.entities.PartyMember.create({
+    await bharat01.entities.PartyMember.create({
       player_id: profile.player_id,
       player_name: profile.username,
       party_id: id,
@@ -72,8 +72,8 @@ export default function PartyDetail() {
       updates.president_id = profile.player_id;
       updates.president_name = profile.username;
     }
-    await base44.entities.PoliticalParty.update(id, updates);
-    await base44.entities.PlayerProfile.update(profile.id, { party_id: id, party_name: party.name });
+    await bharat01.entities.PoliticalParty.update(id, updates);
+    await bharat01.entities.PlayerProfile.update(profile.id, { party_id: id, party_name: party.name });
     setJoining(false);
     loadData();
   }
@@ -82,7 +82,7 @@ export default function PartyDetail() {
 
   async function assignDesignation(memberId, newDesignation) {
     setAssigningId(memberId);
-    await base44.entities.PartyMember.update(memberId, { designation: newDesignation });
+    await bharat01.entities.PartyMember.update(memberId, { designation: newDesignation });
     setAssigningId(null);
     loadData();
   }
@@ -90,13 +90,13 @@ export default function PartyDetail() {
   async function leaveParty() {
     if (!profile || !myMembership) return;
     setLeaving(true);
-    await base44.entities.PartyMember.delete(myMembership.id);
+    await bharat01.entities.PartyMember.delete(myMembership.id);
     const updates = { member_count: Math.max(0, (party.member_count || 0) - 1) };
     if (myMembership.designation === "President") {
       const remaining = members.filter(m => m.player_id !== profile.player_id);
       if (remaining.length > 0) {
         const nextPres = remaining[0];
-        await base44.entities.PartyMember.update(nextPres.id, { designation: "President" });
+        await bharat01.entities.PartyMember.update(nextPres.id, { designation: "President" });
         updates.president_id = nextPres.player_id;
         updates.president_name = nextPres.player_name;
       } else {
@@ -107,19 +107,19 @@ export default function PartyDetail() {
     if (myMembership.designation === "Vice President") { updates.vice_president_id = ""; updates.vice_president_name = ""; }
     if (myMembership.designation === "General Secretary") { updates.general_secretary_id = ""; updates.general_secretary_name = ""; }
     if (myMembership.designation === "Treasurer") { updates.treasurer_id = ""; updates.treasurer_name = ""; }
-    await base44.entities.PoliticalParty.update(id, updates);
-    await base44.entities.PlayerProfile.update(profile.id, { party_id: "", party_name: "" });
+    await bharat01.entities.PoliticalParty.update(id, updates);
+    await bharat01.entities.PlayerProfile.update(profile.id, { party_id: "", party_name: "" });
     setLeaving(false);
     navigate("/parties");
   }
 
   async function approveTicket(ticket) {
     const ticketNumber = "TICKET-" + Date.now().toString(36).toUpperCase();
-    await base44.entities.Candidature.update(ticket.id, {
+    await bharat01.entities.Candidature.update(ticket.id, {
       ticket_status: "approved",
       ticket_number: ticketNumber,
     });
-    await base44.entities.NewsItem.create({
+    await bharat01.entities.NewsItem.create({
       title: `🎫 ${ticket.player_name} Approved as ${party.name} Candidate`,
       content: `${party.name} president has approved ${ticket.player_name}'s candidature for ${ticket.constituency}. Ticket Number: ${ticketNumber}. The candidate is now officially nominated by the party.`,
       category: "politics",
@@ -129,7 +129,7 @@ export default function PartyDetail() {
   }
 
   async function rejectTicket(ticket) {
-    await base44.entities.Candidature.update(ticket.id, { ticket_status: "rejected" });
+    await bharat01.entities.Candidature.update(ticket.id, { ticket_status: "rejected" });
     loadData();
   }
 
@@ -137,10 +137,10 @@ export default function PartyDetail() {
     if (!profile || depositing || depositAmount <= 0) return;
     if ((profile.e_coins || 0) < depositAmount) return;
     setDepositing(true);
-    await base44.entities.PoliticalParty.update(id, {
+    await bharat01.entities.PoliticalParty.update(id, {
       party_fund: (party.party_fund || 0) + depositAmount,
     });
-    await base44.entities.PlayerProfile.update(profile.id, {
+    await bharat01.entities.PlayerProfile.update(profile.id, {
       e_coins: (profile.e_coins || 0) - depositAmount,
     });
     setParty(prev => ({ ...prev, party_fund: (prev.party_fund || 0) + depositAmount }));

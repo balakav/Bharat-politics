@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Send, Globe, Users, Lock } from "lucide-react";
 
@@ -23,17 +23,17 @@ export default function Chat() {
   }, [messages]);
 
   async function loadData() {
-    const me = await base44.auth.me();
+    const me = await bharat01.auth.me();
     const [profiles, msgs] = await Promise.all([
-      base44.entities.PlayerProfile.filter({ created_by_id: me.id }),
-      base44.entities.ChatMessage.filter({ channel }, '-created_date', 50),
+      bharat01.entities.PlayerProfile.filter({ created_by_id: me.id }),
+      bharat01.entities.ChatMessage.filter({ channel }, '-created_date', 50),
     ]);
     if (profiles.length > 0) setProfile(profiles[0]);
     setMessages(msgs.reverse());
   }
 
   useEffect(() => {
-    const unsub = base44.entities.ChatMessage.subscribe(event => {
+    const unsub = bharat01.entities.ChatMessage.subscribe(event => {
       if (event.type === "create" && event.data.channel === channel) {
         setMessages(prev => [...prev, event.data]);
       }
@@ -44,7 +44,7 @@ export default function Chat() {
   async function sendMessage() {
     if (!input.trim() || !profile || sending) return;
     setSending(true);
-    await base44.entities.ChatMessage.create({
+    await bharat01.entities.ChatMessage.create({
       channel,
       sender_id: profile.player_id,
       sender_name: profile.username,

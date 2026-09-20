@@ -1,5 +1,5 @@
 
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 
 // News AI (spec #17). Generates political news. Event-driven helpers are called
 // from the various flows; generateNewsBatch produces periodic flavor news so the
@@ -18,13 +18,13 @@ const FLAVOR_TEMPLATES = [
 
 // Generate `count` flavor news items (no duplicates within the last hour).
 export async function generateNewsBatch(count = 3) {
-  const recent = await base44.entities.NewsItem.list("-created_date", 20);
+  const recent = await bharat01.entities.NewsItem.list("-created_date", 20);
   const recentTitles = new Set(recent.map(n => n.title));
   const pool = FLAVOR_TEMPLATES.filter(t => !recentTitles.has(t.title));
   const chosen = [...pool].sort(() => Math.random() - 0.5).slice(0, count);
   const created = [];
   for (const t of chosen) {
-    const rec = await base44.entities.NewsItem.create({
+    const rec = await bharat01.entities.NewsItem.create({
       title: t.title, content: t.content, category: t.category,
       source: "TV99 Bharat", related_type: "news_ai", related_id: "",
     });
@@ -35,7 +35,7 @@ export async function generateNewsBatch(count = 3) {
 
 // Event-driven helper (used by other flows that want a custom headline).
 export async function generateNewsFromEvent(title, content, category = "politics", relatedType = "event", relatedId = "") {
-  return await base44.entities.NewsItem.create({
+  return await bharat01.entities.NewsItem.create({
     title, content, category, source: "TV99 Bharat", related_type: relatedType, related_id: relatedId,
   });
 }

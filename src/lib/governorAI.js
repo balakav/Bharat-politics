@@ -1,5 +1,5 @@
 
-import { base44 } from "@/api/base44Client";
+import { bharat01 } from "@/api/bharat01Client";
 import { getStateById, NATION } from "@/lib/bharatStates";
 import { generateAIName } from "@/lib/gameData";
 import { getGameConfig, getCurrentGameTime } from "@/lib/gameTime";
@@ -19,24 +19,24 @@ function headTitleFor(electionType) {
 }
 
 export async function runGovernorAI(electionId) {
-  const el = await base44.entities.Election.get(electionId);
+  const el = await bharat01.entities.Election.get(electionId);
   if (!el || !el.results_declared) throw new Error("Election not yet completed");
   const isNational = el.election_type === "national";
   const scope = isNational ? "national" : "state";
 
-  const existingGovs = await base44.entities.Government.filter({ election_id: electionId });
+  const existingGovs = await bharat01.entities.Government.filter({ election_id: electionId });
   const gov = existingGovs[0];
   if (!gov) throw new Error("No government record — declare results first");
 
   // Idempotent
-  const existingMinisters = await base44.entities.Minister.filter({ government_id: gov.id });
+  const existingMinisters = await bharat01.entities.Minister.filter({ government_id: gov.id });
   if (existingMinisters.length > 0) return { alreadyFormed: true, government: gov };
 
   const config = await getGameConfig();
   const gameTime = (await getCurrentGameTime()).toISOString();
 
   // Seat counts per party from won candidatures
-  const winners = await base44.entities.Candidature.filter({ election_id: electionId, result: "won" }, "-votes_received", 5000);
+  const winners = await bharat01.entities.Candidature.filter({ election_id: electionId, result: "won" }, "-votes_received", 5000);
   const partySeats = {};
   const partyWinners = {};
   for (const w of winners) {
@@ -48,7 +48,7 @@ export async function runGovernorAI(electionId) {
   const majorityMark = el.majority_mark || 0;
 
   let alliances = [];
-  try { alliances = await base44.entities.Alliance.list(); } catch (e) {}
+  try { alliances = await bharat01.entities.Alliance.list(); } catch (e) {}
 
   // Governor AI: try each party in order, prove majority alone or via coalition.
   let formed = null;
@@ -90,7 +90,7 @@ export async function runGovernorAI(electionId) {
   if (!formed) {
     const duration = config.president_rule_duration_days || 3;
     const ends = new Date(new Date(gameTime).getTime() + duration * 24 * 3600 * 1000).toISOString();
-    await base44.entities.PresidentRule.create({
+    await bharat01.entities.PresidentRule.create({
       state_id: isNational ? "" : (el.state_id || ""),
       state_name: scopeName,
       started_game_time: gameTime,
@@ -99,7 +99,7 @@ export async function runGovernorAI(electionId) {
       status: "active",
       reason: "No party or coalition could prove majority (Governor AI).",
     });
-    await base44.entities.Government.update(gov.id, {
+    await bharat01.entities.Government.update(gov.id, {
       is_active: false,
       head_player_name: "President's Rule",
       head_player_id: "",
@@ -107,7 +107,7 @@ export async function runGovernorAI(electionId) {
       coalition_parties: [],
       cabinet: JSON.stringify({ status: "presidents_rule", majority_mark: majorityMark, total_seats: winners.length }),
     });
-    await base44.entities.NewsItem.create({
+    await bharat01.entities.NewsItem.create({
       title: `🏛️ President's Rule imposed in ${scopeName}`,
       content: `Governor AI: no party or coalition proved majority in the ${el.title}. President's Rule activated for ${duration} in-game days.`,
       category: "breaking", source: "TV99 Bharat", related_type: "presidents_rule", related_id: electionId,
@@ -144,9 +144,9 @@ export async function runGovernorAI(electionId) {
     });
   }
 
-  await base44.entities.Minister.bulkCreate(ministersToCreate);
+  await bharat01.entities.Minister.bulkCreate(ministersToCreate);
 
-  await base44.entities.Government.update(gov.id, {
+  await bharat01.entities.Government.update(gov.id, {
     head_player_id: cm.player_id || "",
     head_player_name: cm.player_name,
     head_title: headTitle,
@@ -156,7 +156,7 @@ export async function runGovernorAI(electionId) {
     is_active: true,
   });
 
-  await base44.entities.NewsItem.create({
+  await bharat01.entities.NewsItem.create({
     title: `🏛️ ${cm.player_name} sworn in as ${headTitle} of ${scopeName}`,
     content: `Governor AI invited ${formed.invitedParty}. ${formed.type === "majority" ? "Absolute majority government" : "Coalition government"} with ${formed.seats} seats. ${ministersToCreate.length} ministers sworn in.`,
     category: "breaking", source: "TV99 Bharat", related_type: "government_formed", related_id: electionId,
