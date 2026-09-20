@@ -1,0 +1,99 @@
+{
+  "name": "Minister",
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "string",
+      "enum": [
+        "state",
+        "national"
+      ]
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "government_id": {
+      "type": "string"
+    },
+    "player_id": {
+      "type": "string"
+    },
+    "player_name": {
+      "type": "string"
+    },
+    "portfolio": {
+      "type": "string"
+    },
+    "position": {
+      "type": "string",
+      "enum": [
+        "cm",
+        "pm",
+        "speaker",
+        "deputy_cm",
+        "whip",
+        "minister",
+        "union_minister"
+      ],
+      "default": "minister"
+    },
+    "party_id": {
+      "type": "string"
+    },
+    "party_name": {
+      "type": "string"
+    },
+    "appointed_game_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "scope",
+    "player_id",
+    "portfolio"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "name": "DevelopmentProject",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string"
+    },
+    "player_name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "road",
+        "school",
+        "hospital",
+        "garden",
+        "water_project",
+        "sports_facility",
+        "fishing_infrastructure",
+        "welfare_program"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "constituency": {
+      "type": "string"
+    },
+    "cost": {
+      "type": "number"
+    },
+    "impact": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "completed"
+      ],
+      "default": "planned"
+    }
+  },
+  "required": [
+    "player_id",
+    "type",
+    "name",
+    "cost"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "PartyMember",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string"
+    },
+    "player_name": {
+      "type": "string"
+    },
+    "party_id": {
+      "type": "string"
+    },
+    "party_name": {
+      "type": "string"
+    },
+    "designation": {
+      "type": "string",
+      "default": "Member"
+    },
+    "joined_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "player_id",
+    "party_id"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

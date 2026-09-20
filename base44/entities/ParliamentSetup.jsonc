@@ -1,0 +1,75 @@
+{
+  "name": "ParliamentSetup",
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "string",
+      "enum": [
+        "national",
+        "state"
+      ]
+    },
+    "house": {
+      "type": "string"
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "state_name": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "speaker_name": {
+      "type": "string"
+    },
+    "total_seats": {
+      "type": "number"
+    },
+    "majority_mark": {
+      "type": "number"
+    },
+    "winning_party_name": {
+      "type": "string"
+    },
+    "winning_party_seats": {
+      "type": "number"
+    },
+    "coalition": {
+      "type": "string"
+    },
+    "supporters": {
+      "type": "string"
+    },
+    "government_seats": {
+      "type": "number"
+    },
+    "opposition_seats": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "scope",
+    "title",
+    "total_seats"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

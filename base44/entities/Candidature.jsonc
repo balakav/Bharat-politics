@@ -1,0 +1,113 @@
+{
+  "name": "Candidature",
+  "type": "object",
+  "properties": {
+    "election_id": {
+      "type": "string"
+    },
+    "election_type": {
+      "type": "string"
+    },
+    "player_id": {
+      "type": "string"
+    },
+    "player_name": {
+      "type": "string"
+    },
+    "player_photo": {
+      "type": "string"
+    },
+    "party_id": {
+      "type": "string"
+    },
+    "party_name": {
+      "type": "string"
+    },
+    "party_short": {
+      "type": "string"
+    },
+    "constituency": {
+      "type": "string"
+    },
+    "seat_type": {
+      "type": "string"
+    },
+    "manifesto": {
+      "type": "string"
+    },
+    "campaign_budget": {
+      "type": "number",
+      "default": 0
+    },
+    "campaign_spent": {
+      "type": "number",
+      "default": 0
+    },
+    "votes_received": {
+      "type": "number",
+      "default": 0
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "won",
+        "lost"
+      ],
+      "default": "pending"
+    },
+    "registration_number": {
+      "type": "string"
+    },
+    "rounds_data": {
+      "type": "string"
+    },
+    "ticket_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "ticket_number": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "election_id",
+    "player_id",
+    "constituency"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

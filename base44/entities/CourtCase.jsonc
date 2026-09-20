@@ -1,0 +1,93 @@
+{
+  "name": "CourtCase",
+  "type": "object",
+  "properties": {
+    "case_id": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "state",
+        "national"
+      ]
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "complainant": {
+      "type": "string"
+    },
+    "defendant_id": {
+      "type": "string"
+    },
+    "defendant_name": {
+      "type": "string"
+    },
+    "charges": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "string"
+    },
+    "witness_info": {
+      "type": "string"
+    },
+    "investigation_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "filed",
+        "hearing",
+        "judgment",
+        "closed"
+      ],
+      "default": "filed"
+    },
+    "judgment": {
+      "type": "string"
+    },
+    "punishment": {
+      "type": "string"
+    },
+    "fine_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "filed_game_time": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "defendant_id",
+    "charges"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

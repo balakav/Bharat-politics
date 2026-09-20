@@ -1,0 +1,70 @@
+{
+  "name": "PopularityScore",
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "string",
+      "enum": [
+        "party",
+        "candidate",
+        "government",
+        "minister",
+        "cm",
+        "pm",
+        "constituency"
+      ]
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "target_name": {
+      "type": "string"
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "score": {
+      "type": "number",
+      "default": 50
+    },
+    "trend": {
+      "type": "string",
+      "enum": [
+        "up",
+        "down",
+        "stable"
+      ],
+      "default": "stable"
+    },
+    "factors": {
+      "type": "string"
+    },
+    "updated_game_time": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "scope",
+    "target_id",
+    "score"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

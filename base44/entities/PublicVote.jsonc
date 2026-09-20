@@ -1,0 +1,47 @@
+{
+  "name": "PublicVote",
+  "type": "object",
+  "properties": {
+    "election_id": {
+      "type": "string"
+    },
+    "candidature_id": {
+      "type": "string"
+    },
+    "candidate_name": {
+      "type": "string"
+    },
+    "party_name": {
+      "type": "string"
+    },
+    "party_short": {
+      "type": "string"
+    },
+    "constituency": {
+      "type": "string"
+    },
+    "voter_fingerprint": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "election_id",
+    "candidature_id"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

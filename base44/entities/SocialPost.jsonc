@@ -1,0 +1,54 @@
+{
+  "name": "SocialPost",
+  "type": "object",
+  "properties": {
+    "author_id": {
+      "type": "string"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_photo": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "parent_id": {
+      "type": "string"
+    },
+    "likes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "shares": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "author_id",
+    "content"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": null,
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

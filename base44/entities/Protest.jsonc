@@ -1,0 +1,89 @@
+{
+  "name": "Protest",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "state",
+        "national"
+      ]
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "state_name": {
+      "type": "string"
+    },
+    "organizer_party_id": {
+      "type": "string"
+    },
+    "organizer_party_name": {
+      "type": "string"
+    },
+    "organizer_player_id": {
+      "type": "string"
+    },
+    "organizer_player_name": {
+      "type": "string"
+    },
+    "target_party_name": {
+      "type": "string",
+      "description": "The ruling party being protested against"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "impact": {
+      "type": "number",
+      "default": 5,
+      "description": "Anti-incumbency points against the target party when approved"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "reviewed_by_name": {
+      "type": "string",
+      "description": "The Home Minister who approved or rejected the protest"
+    }
+  },
+  "required": [
+    "title",
+    "scope",
+    "organizer_party_name"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": null,
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

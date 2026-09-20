@@ -1,0 +1,108 @@
+{
+  "name": "Budget",
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "string",
+      "enum": [
+        "state",
+        "national"
+      ]
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "fiscal_year": {
+      "type": "string"
+    },
+    "finance_minister_id": {
+      "type": "string"
+    },
+    "finance_minister_name": {
+      "type": "string"
+    },
+    "revenue": {
+      "type": "number",
+      "default": 0
+    },
+    "expenditure": {
+      "type": "number",
+      "default": 0
+    },
+    "development_spending": {
+      "type": "number",
+      "default": 0
+    },
+    "welfare_spending": {
+      "type": "number",
+      "default": 0
+    },
+    "infrastructure_spending": {
+      "type": "number",
+      "default": 0
+    },
+    "salary_spending": {
+      "type": "number",
+      "default": 0
+    },
+    "deficit": {
+      "type": "number",
+      "default": 0
+    },
+    "ai_score": {
+      "type": "number",
+      "default": 0
+    },
+    "ai_notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "ai_review",
+        "returned",
+        "presented",
+        "voting",
+        "approved",
+        "rejected"
+      ],
+      "default": "draft"
+    },
+    "assembly_votes_for": {
+      "type": "number",
+      "default": 0
+    },
+    "assembly_votes_against": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "scope",
+    "fiscal_year"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "name": "Task",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "objective": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "state",
+        "national"
+      ],
+      "default": "state"
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "choices": {
+      "type": "string"
+    },
+    "time_limit_hours": {
+      "type": "number",
+      "default": 24
+    },
+    "deadline_game_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "expired",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "chosen_option": {
+      "type": "string"
+    },
+    "reward_reputation": {
+      "type": "number",
+      "default": 0
+    },
+    "reward_e_coins": {
+      "type": "number",
+      "default": 0
+    },
+    "risk": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "player_id",
+    "title",
+    "objective"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

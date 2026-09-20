@@ -1,0 +1,74 @@
+{
+  "name": "CabinetApproval",
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "string",
+      "enum": [
+        "state",
+        "national"
+      ]
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "state_name": {
+      "type": "string"
+    },
+    "government_id": {
+      "type": "string"
+    },
+    "party_name": {
+      "type": "string"
+    },
+    "head_player_name": {
+      "type": "string"
+    },
+    "head_title": {
+      "type": "string"
+    },
+    "cabinet": {
+      "type": "string",
+      "description": "JSON array of the appointed ministers"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "submitted_by_name": {
+      "type": "string"
+    },
+    "reviewed_by_name": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "scope",
+    "government_id",
+    "party_name"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

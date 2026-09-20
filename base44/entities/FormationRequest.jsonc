@@ -1,0 +1,104 @@
+{
+  "name": "FormationRequest",
+  "type": "object",
+  "properties": {
+    "election_id": {
+      "type": "string"
+    },
+    "election_title": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "state",
+        "national"
+      ]
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "state_name": {
+      "type": "string"
+    },
+    "party_id": {
+      "type": "string"
+    },
+    "party_name": {
+      "type": "string"
+    },
+    "party_short": {
+      "type": "string"
+    },
+    "president_id": {
+      "type": "string"
+    },
+    "president_name": {
+      "type": "string"
+    },
+    "seats": {
+      "type": "number",
+      "default": 0
+    },
+    "majority_mark": {
+      "type": "number"
+    },
+    "deadline_game_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "proven",
+        "failed",
+        "withdrawn"
+      ],
+      "default": "sent"
+    },
+    "proof_type": {
+      "type": "string",
+      "enum": [
+        "single",
+        "alliance",
+        ""
+      ]
+    },
+    "coalition_party_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "total_seats": {
+      "type": "number",
+      "default": 0
+    },
+    "government_id": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "election_id",
+    "party_name",
+    "majority_mark"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": null,
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

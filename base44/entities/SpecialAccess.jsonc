@@ -1,0 +1,44 @@
+{
+  "name": "SpecialAccess",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string"
+    },
+    "player_name": {
+      "type": "string"
+    },
+    "access_type": {
+      "type": "string",
+      "description": "The special access granted by the admin (e.g. election_control, treasury, speaker_powers)"
+    },
+    "granted_by_name": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "player_id",
+    "access_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

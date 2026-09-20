@@ -1,0 +1,54 @@
+{
+  "name": "Transaction",
+  "type": "object",
+  "properties": {
+    "sender_id": {
+      "type": "string"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "receiver_id": {
+      "type": "string"
+    },
+    "receiver_name": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "note": {
+      "type": "string"
+    },
+    "transaction_type": {
+      "type": "string",
+      "enum": [
+        "transfer",
+        "salary",
+        "purchase"
+      ],
+      "default": "transfer"
+    }
+  },
+  "required": [
+    "sender_id",
+    "receiver_id",
+    "amount"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

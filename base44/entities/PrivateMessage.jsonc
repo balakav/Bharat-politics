@@ -1,0 +1,65 @@
+{
+  "name": "PrivateMessage",
+  "type": "object",
+  "properties": {
+    "sender_id": {
+      "type": "string"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "receiver_id": {
+      "type": "string"
+    },
+    "receiver_name": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "image"
+      ],
+      "default": "text"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false
+    },
+    "hidden_for": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "sender_id",
+    "receiver_id"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": null,
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

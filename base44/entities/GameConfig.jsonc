@@ -1,0 +1,77 @@
+{
+  "name": "GameConfig",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "enum": [
+        "global"
+      ]
+    },
+    "game_start_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "time_speed_multiplier": {
+      "type": "number",
+      "default": 1
+    },
+    "president_rule_duration_days": {
+      "type": "number",
+      "default": 3
+    },
+    "budget_min_score": {
+      "type": "number",
+      "default": 70
+    },
+    "national_majority": {
+      "type": "number",
+      "default": 374
+    },
+    "default_assembly_majority_pct": {
+      "type": "number",
+      "default": 0.5
+    },
+    "mla_access_days": {
+      "type": "number",
+      "default": 5
+    },
+    "elected_term_days": {
+      "type": "number",
+      "default": 30
+    },
+    "salary_cycle_hours": {
+      "type": "number",
+      "default": 24
+    },
+    "starting_e_coins": {
+      "type": "number",
+      "default": 1000000000
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "key"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

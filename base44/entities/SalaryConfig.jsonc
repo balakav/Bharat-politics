@@ -1,0 +1,49 @@
+{
+  "name": "SalaryConfig",
+  "type": "object",
+  "properties": {
+    "position": {
+      "type": "string"
+    },
+    "base_salary": {
+      "type": "number"
+    },
+    "max_salary": {
+      "type": "number"
+    },
+    "growth_rate": {
+      "type": "number",
+      "default": 5
+    },
+    "cycle_hours": {
+      "type": "number",
+      "default": 24
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "position",
+    "base_salary"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "name": "SeatShare",
+  "type": "object",
+  "properties": {
+    "alliance_id": {
+      "type": "string"
+    },
+    "alliance_name": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "state",
+        "national"
+      ]
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "total_seats": {
+      "type": "number",
+      "default": 0
+    },
+    "allocations": {
+      "type": "string",
+      "description": "JSON array of {party_name, seats}"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "finalized"
+      ],
+      "default": "draft"
+    },
+    "finalized_by_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "alliance_id",
+    "scope"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

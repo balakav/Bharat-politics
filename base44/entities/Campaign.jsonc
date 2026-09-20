@@ -1,0 +1,76 @@
+{
+  "name": "Campaign",
+  "type": "object",
+  "properties": {
+    "player_id": {
+      "type": "string"
+    },
+    "election_id": {
+      "type": "string"
+    },
+    "candidature_id": {
+      "type": "string"
+    },
+    "alliance_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "rally",
+        "speech",
+        "poster",
+        "advertisement",
+        "door_to_door",
+        "social_media"
+      ]
+    },
+    "constituency": {
+      "type": "string"
+    },
+    "cost": {
+      "type": "number"
+    },
+    "impact": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "player_id",
+    "type",
+    "cost"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

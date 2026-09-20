@@ -1,0 +1,89 @@
+{
+  "name": "ElectionRecord",
+  "type": "object",
+  "properties": {
+    "election_type": {
+      "type": "string"
+    },
+    "election_title": {
+      "type": "string"
+    },
+    "election_id": {
+      "type": "string"
+    },
+    "election_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "state_name": {
+      "type": "string"
+    },
+    "position_title": {
+      "type": "string"
+    },
+    "winner_name": {
+      "type": "string"
+    },
+    "winner_party": {
+      "type": "string"
+    },
+    "winner_party_short": {
+      "type": "string"
+    },
+    "winner_is_ai": {
+      "type": "boolean",
+      "default": false
+    },
+    "winner_player_id": {
+      "type": "string"
+    },
+    "constituency": {
+      "type": "string"
+    },
+    "seat_type": {
+      "type": "string"
+    },
+    "winner_votes": {
+      "type": "number"
+    },
+    "runner_up_name": {
+      "type": "string"
+    },
+    "runner_up_party": {
+      "type": "string"
+    },
+    "runner_up_votes": {
+      "type": "number"
+    },
+    "vote_margin": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "election_type",
+    "position_title",
+    "winner_name",
+    "constituency"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

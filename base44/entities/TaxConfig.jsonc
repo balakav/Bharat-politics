@@ -1,0 +1,73 @@
+{
+  "name": "TaxConfig",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "tax_type": {
+      "type": "string",
+      "enum": [
+        "income",
+        "property",
+        "business",
+        "transaction",
+        "vehicle",
+        "custom"
+      ]
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "state",
+        "national"
+      ]
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "rate": {
+      "type": "number"
+    },
+    "min_threshold": {
+      "type": "number",
+      "default": 0
+    },
+    "max_threshold": {
+      "type": "number",
+      "default": 0
+    },
+    "effective_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "tax_type",
+    "scope",
+    "rate"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "name": "Election",
+  "type": "object",
+  "properties": {
+    "election_type": {
+      "type": "string",
+      "enum": [
+        "vidhan_sabha",
+        "rmc",
+        "panchayat",
+        "lok_sabha",
+        "national"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "cycle_key": {
+      "type": "string"
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "state_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "campaign",
+        "voting",
+        "counting",
+        "completed"
+      ],
+      "default": "upcoming"
+    },
+    "campaign_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "voting_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "voting_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "counting_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "total_seats": {
+      "type": "number"
+    },
+    "majority_mark": {
+      "type": "number"
+    },
+    "results_declared": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "election_type",
+    "title"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

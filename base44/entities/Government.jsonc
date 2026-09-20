@@ -1,0 +1,95 @@
+{
+  "name": "Government",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "state",
+        "national",
+        "municipal",
+        "panchayat"
+      ]
+    },
+    "election_id": {
+      "type": "string"
+    },
+    "state_id": {
+      "type": "string"
+    },
+    "state_name": {
+      "type": "string"
+    },
+    "head_player_id": {
+      "type": "string"
+    },
+    "head_player_name": {
+      "type": "string"
+    },
+    "head_title": {
+      "type": "string"
+    },
+    "party_id": {
+      "type": "string"
+    },
+    "party_name": {
+      "type": "string"
+    },
+    "coalition_parties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cabinet": {
+      "type": "string"
+    },
+    "cabinet_plan": {
+      "type": "string"
+    },
+    "map_color": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "type",
+    "head_player_name",
+    "head_title"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

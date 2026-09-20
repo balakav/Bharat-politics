@@ -1,0 +1,109 @@
+{
+  "name": "PoliticalParty",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "short_name": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "manifesto": {
+      "type": "string"
+    },
+    "ideology": {
+      "type": "string"
+    },
+    "president_id": {
+      "type": "string"
+    },
+    "president_name": {
+      "type": "string"
+    },
+    "vice_president_id": {
+      "type": "string"
+    },
+    "vice_president_name": {
+      "type": "string"
+    },
+    "general_secretary_id": {
+      "type": "string"
+    },
+    "general_secretary_name": {
+      "type": "string"
+    },
+    "treasurer_id": {
+      "type": "string"
+    },
+    "treasurer_name": {
+      "type": "string"
+    },
+    "member_count": {
+      "type": "number",
+      "default": 0
+    },
+    "party_fund": {
+      "type": "number",
+      "default": 0
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "office_location": {
+      "type": "string"
+    },
+    "alliances": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_preset": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "name",
+    "short_name"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

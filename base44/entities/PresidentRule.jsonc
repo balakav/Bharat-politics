@@ -1,0 +1,56 @@
+{
+  "name": "PresidentRule",
+  "type": "object",
+  "properties": {
+    "state_id": {
+      "type": "string"
+    },
+    "state_name": {
+      "type": "string"
+    },
+    "started_game_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ends_game_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "duration_days": {
+      "type": "number",
+      "default": 3
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "ended"
+      ],
+      "default": "active"
+    },
+    "reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "state_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
